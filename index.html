@@ -1,0 +1,1996 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+
+    <meta content="#1a1b1c" name="theme-color" />
+    <meta content="#1a1b1c" name="msapplication-navbutton-color" />
+    <head>
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+    </head>
+    <meta content="#1a1b1c" name="apple-mobile-web-app-status-bar-style" />
+
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <title>Progress Printshop ★ Workspace</title>
+
+    <!-- Typography: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Icons -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/remixicon@4.9.1/fonts/remixicon.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      href="https://i.ibb.co.com/Mb1TFB2/favicon.png"
+    />
+
+    <!-- External JS Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <link rel="stylesheet" href="css/variables.css" />
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/mobile.css" />
+  </head>
+  <body>
+    <!-- ==================================================== -->
+    <!-- ---------------------- NAVBAR ---------------------- -->
+    <nav class="nav">
+      <a class="nav-brand" href="#">
+        <img
+          src="https://i.ibb.co.com/bRGtz1hJ/LOGO-PROGRESS.png"
+          alt="Logo"
+          class="nav-logo-img"
+          onerror="this.style.display = 'none'"
+        />
+        <span class="nav-name">Progress<span> ★ </span>Workspace</span>
+      </a>
+
+      <div class="nav-actions">
+        <button
+          class="btn btn-ghost btn-sm btn-icon"
+          onclick="toggleDark()"
+          title="Ubah Tema"
+        >
+          <i class="ri-contrast-2-line" id="theme-icon"></i>
+        </button>
+
+        <div class="nav-add-dropdown">
+          <button
+            class="btn btn-solid btn-sm btn-icon"
+            onclick="toggleAddDropdown(event)"
+            title="Pesanan Baru"
+          >
+            <i class="ri-add-line"></i>
+          </button>
+
+          <div class="nav-add-menu" id="nav-add-menu">
+            <button onclick="openModal('modal-design')">
+              <i class="ri-palette-line"></i> Pesanan Desain
+            </button>
+            <button onclick="openModal('modal-production')">
+              <i class="ri-printer-line"></i> Pesanan Produksi
+            </button>
+          </div>
+        </div>
+
+        <!-- MOBILE MENU -->
+
+        <div class="mobile-nav-dropdown">
+          <button
+            class="btn btn-ghost btn-sm btn-icon"
+            onclick="toggleMobileNav()"
+          >
+            <i class="ri-menu-4-line"></i>
+          </button>
+
+          <div class="mobile-nav-menu" id="mobile-nav-menu">
+            <button onclick="scrollToSection('design-section')">Desain</button>
+
+            <button onclick="scrollToSection('production-section')">
+              Produksi
+            </button>
+
+            <button onclick="scrollToSection('tasks-section')">
+              Tugas Harian
+            </button>
+
+            <button onclick="scrollToSection('invoice-section')">
+              Invoice
+            </button>
+
+            <button onclick="scrollToSection('estimator-section')">
+              Estimasi Biaya
+            </button>
+
+            <button onclick="scrollToSection('costing-history-section')">
+              Laporan
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ==================================================== -->
+    <!-- ------------------- MAIN WORKSPACE ----------------- -->
+    <main class="workspace">
+      <!-- ==================================================== -->
+      <!-- ---------------------- HERO ------------------------ -->
+      <section class="hero ws-section" id="hero-section">
+        <div class="hero-content">
+          <div class="hero-meta">
+            <div class="hero-date" id="hero-date">Senin, 25 Mei 2026</div>
+            <div class="hero-clock" id="hero-clock">08:00 WIB</div>
+          </div>
+          <div class="hero-stats" id="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-val" id="stat-active-orders">–</div>
+              <div class="hero-stat-label">
+                <span
+                  class="hero-stat-dot"
+                  style="background: var(--blue)"
+                ></span
+                >Pesanan Aktif
+              </div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val" id="stat-production">–</div>
+              <div class="hero-stat-label">
+                <span
+                  class="hero-stat-dot"
+                  style="background: var(--yellow)"
+                ></span
+                >Dalam Produksi
+              </div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val" id="stat-done-today">–</div>
+              <div class="hero-stat-label">
+                <span
+                  class="hero-stat-dot"
+                  style="background: var(--green)"
+                ></span
+                >Selesai
+              </div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-val" id="stat-overdue">–</div>
+              <div class="hero-stat-label">
+                <span
+                  class="hero-stat-dot"
+                  style="background: var(--red)"
+                ></span
+                >Terlambat
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ------------------- DESIGN WORKFLOW ---------------- -->
+      <section class="ws-section" id="pipeline-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon"><i class="ri-flow-chart"></i></div>
+            Workflow Desain
+          </div>
+        </div>
+        <div class="pipeline">
+          <div
+            class="pipeline-step"
+            data-stage="design"
+            onclick="filterByStage('design')"
+          >
+            <div class="pipeline-dot">
+              <i class="ri-pencil-ruler-2-line"></i>
+            </div>
+            <div class="pipeline-label">Desain</div>
+            <div class="pipeline-count" id="pipe-design">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-stage="revisi"
+            onclick="filterByStage('revisi')"
+          >
+            <div class="pipeline-dot"><i class="ri-loop-left-line"></i></div>
+            <div class="pipeline-label">Revisi</div>
+            <div class="pipeline-count" id="pipe-revisi">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-stage="done"
+            onclick="filterByStage('done')"
+          >
+            <div class="pipeline-dot"><i class="ri-check-double-line"></i></div>
+            <div class="pipeline-label">Selesai</div>
+            <div class="pipeline-count" id="pipe-done">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- DESIGN ORDERS --------------------- -->
+      <section class="ws-section" id="design-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon">
+              <i class="ri-palette-line"></i>
+            </div>
+
+            Pesanan Desain
+          </div>
+          <div class="ws-section-actions">
+            <select
+              class="input hide-mobile"
+              id="design-filter"
+              style="width: 180px"
+              onchange="setDesignFilter(this.value)"
+            >
+              <option value="all">Semua Desain</option>
+              <option value="progress">Sedang Berjalan</option>
+              <option value="urgent">Mendesak</option>
+              <option value="overdue">Terlambat</option>
+              <option value="done">Selesai</option>
+            </select>
+            <div class="search-wrap" style="width: 220px">
+              <i class="search-icon ri-search-line"></i>
+              <input
+                class="input"
+                id="design-search"
+                placeholder="Cari desain..."
+                oninput="renderDesignOrders()"
+              />
+            </div>
+            <button class="btn btn-solid" onclick="openModal('modal-design')">
+              <i class="ri-add-line"></i> Tambah Desain
+            </button>
+          </div>
+        </div>
+        <div id="design-content" class="section-content">
+          <div class="card card-solid">
+            <table class="ws-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+
+                  <th
+                    onclick="toggleCustomerSort('designOrder')"
+                    style="cursor: pointer"
+                  >
+                    Customer
+                  </th>
+
+                  <th>Project</th>
+                  <th>Kategori</th>
+                  <th>Deadline</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="design-tbody"></tbody>
+            </table>
+            <div id="design-mobile-list" class="design-mobile-list"></div>
+            <div class="pagination" id="design-pagination"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ------------ PRODUCTION PIPELINE ------------------- -->
+      <section class="ws-section" id="production-pipeline-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon"><i class="ri-flow-chart"></i></div>
+            Workflow Produksi
+          </div>
+        </div>
+        <div class="pipeline">
+          <div
+            class="pipeline-step"
+            data-production-stage="design"
+            onclick="filterProductionStage('design')"
+          >
+            <div class="pipeline-dot">
+              <i class="ri-pencil-ruler-2-line"></i>
+            </div>
+            <div class="pipeline-label">Desain</div>
+            <div class="pipeline-count" id="prod-pipe-design">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-production-stage="printing"
+            onclick="filterProductionStage('printing')"
+          >
+            <div class="pipeline-dot"><i class="ri-printer-line"></i></div>
+            <div class="pipeline-label">Cetak</div>
+            <div class="pipeline-count" id="prod-pipe-printing">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-production-stage="jahit"
+            onclick="filterProductionStage('jahit')"
+          >
+            <div class="pipeline-dot"><i class="ri-shirt-line"></i></div>
+            <div class="pipeline-label">Jahit</div>
+            <div class="pipeline-count" id="prod-pipe-jahit">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-production-stage="qc"
+            onclick="filterProductionStage('qc')"
+          >
+            <div class="pipeline-dot"><i class="ri-shield-check-line"></i></div>
+            <div class="pipeline-label">QC</div>
+            <div class="pipeline-count" id="prod-pipe-qc">0</div>
+          </div>
+          <div
+            class="pipeline-step"
+            data-production-stage="done"
+            onclick="filterProductionStage('done')"
+          >
+            <div class="pipeline-dot"><i class="ri-check-double-line"></i></div>
+            <div class="pipeline-label">Selesai</div>
+            <div class="pipeline-count" id="prod-pipe-done">0</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- --------------- PRODUCTION ORDERS ------------------ -->
+      <!-- ==================================================== -->
+      <section class="ws-section" id="production-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon">
+              <i class="ri-t-shirt-air-line"></i>
+            </div>
+            Pesanan Produksi
+          </div>
+
+          <div class="ws-section-actions">
+            <select
+              class="input hide-mobile"
+              id="production-filter"
+              style="width: 180px"
+              onchange="renderProductionOrders()"
+            >
+              <option value="all">Semua Pesanan</option>
+              <option value="progress">Sedang Berjalan</option>
+              <option value="urgent">Mendesak</option>
+              <option value="overdue">Terlambat</option>
+              <option value="done">Selesai</option>
+            </select>
+
+            <div class="search-wrap" style="width: 220px">
+              <i class="search-icon ri-search-line"></i>
+              <input
+                class="input"
+                id="production-search"
+                placeholder="Cari produksi..."
+                oninput="renderProductionOrders()"
+              />
+            </div>
+
+            <button
+              class="btn btn-solid"
+              onclick="openModal('modal-production')"
+            >
+              <i class="ri-add-line"></i>
+              Tambah Produksi
+            </button>
+          </div>
+        </div>
+
+        <div class="card card-solid">
+          <table class="ws-table">
+            <thead>
+              <tr>
+                <th>No</th>
+
+                <th
+                  onclick="toggleCustomerSort('productionOrder')"
+                  style="cursor: pointer"
+                >
+                  Customer
+                </th>
+
+                <th>Project</th>
+                <th>Jumlah</th>
+                <th>Material</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="production-tbody"></tbody>
+          </table>
+          <div id="production-mobile-list" class="design-mobile-list"></div>
+          <div id="production-pagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- TASKS ---------------------------- -->
+      <section class="ws-section" id="tasks-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon"><i class="ri-list-check-3"></i></div>
+            Tugas Harian
+          </div>
+
+          <div class="ws-section-actions">
+            <button class="btn btn-ghost" onclick="openModal('modal-task')">
+              <i class="ri-add-line"></i> Tambah Tugas
+            </button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card card-solid">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+              "
+            >
+              <div style="font-size: 13px; font-weight: 600">Tertunda</div>
+              <span class="badge-status badge-revisi" id="task-pending-count"
+                >0</span
+              >
+            </div>
+            <div id="task-list-pending">
+              <div class="empty-state">
+                <i class="ri-checkbox-circle-line"></i>Tidak ada tugas tertunda
+              </div>
+            </div>
+          </div>
+          <div class="card card-solid">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+              "
+            >
+              <div style="font-size: 13px; font-weight: 600">Selesai</div>
+              <span class="badge-status badge-done" id="task-done-count"
+                >0</span
+              >
+            </div>
+            <div id="task-list-done">
+              <div class="empty-state">
+                <i class="ri-check-double-line"></i>Tidak ada tugas selesai
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- INVOICE ------------------ -->
+
+      <section class="ws-section collapsible-section" id="invoice-section">
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <div class="section-icon">
+              <i class="ri-file-paper-2-line"></i>
+            </div>
+
+            Invoice
+          </div>
+
+          <div class="ws-section-actions" onclick="event.stopPropagation()">
+            <select
+              class="input hide-mobile"
+              id="invoice-filter"
+              onchange="renderInvoices()"
+              style="width: 170px"
+            >
+              <option value="all">Semua Invoice</option>
+              <option value="draft">DP</option>
+              <option value="paid">LUNAS</option>
+            </select>
+
+            <div
+              class="search-wrap"
+              oninput="renderInvoices()"
+              style="width: 220px"
+            >
+              <i class="search-icon ri-search-line"></i>
+
+              <input
+                class="input"
+                id="invoice-search"
+                placeholder="Cari invoice..."
+              />
+            </div>
+
+            <button class="btn btn-solid" onclick="openAddInvoiceModal()">
+              <i class="ri-add-line"></i> Tambah Invoice
+            </button>
+          </div>
+        </div>
+
+        <div class="card card-solid section-body">
+          <table class="ws-table">
+            <thead>
+              <tr>
+                <th>No</th>
+
+                <th>Customer</th>
+
+                <th>Produk</th>
+
+                <th>Tanggal</th>
+
+                <th>Total</th>
+
+                <th>Status</th>
+
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody id="invoice-tbody">
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <i class="ri-file-list-3-line"></i>
+
+                    Belum ada Invoice
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div id="invoice-mobile-list" class="design-mobile-list"></div>
+          <div id="invoice-pagination" class="pagination"></div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ==================================================== -->
+      <!-- ------------- COST ESTIMATOR (GEMINI CORE) -------- -->
+      <section class="ws-section collapsible-section" id="estimator-section">
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <i
+              id="estimator-arrow"
+              class="ri-arrow-right-s-line section-arrow"
+            ></i>
+            <div class="section-icon"><i class="ri-calculator-line"></i></div>
+            Estimasi Produksi
+          </div>
+          <div class="ws-section-actions section-body">
+            <button class="btn btn-ghost btn-sm" onclick="resetFormCosting()">
+              <i class="ri-refresh-line"></i>
+              <span class="hide-mobile">Kosongkan Form</span>
+            </button>
+
+            <button class="btn btn-ghost btn-sm" onclick="saveHistory()">
+              <i class="ri-bookmark-line"></i>
+              <span class="hide-mobile">Simpan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer Info -->
+        <div class="card card-solid section-body" style="margin-bottom: 16px">
+          <div class="form-grid-3">
+            <div class="form-group">
+              <label class="form-label">Customer</label>
+              <input
+                class="input"
+                id="customer"
+                placeholder="Nama customer"
+                oninput="this.value = this.value.toUpperCase()"
+              />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Project</label>
+              <input
+                class="input"
+                id="team"
+                placeholder="Klub / Tim"
+                oninput="this.value = this.value.toUpperCase()"
+              />
+            </div>
+            <div class="form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Jumlah</label>
+                <div class="input-wrap">
+                  <input
+                    class="input"
+                    id="pcs"
+                    type="number"
+                    placeholder="0"
+                    oninput="hitung()"
+                  /><span class="input-unit">pcs</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Harga Jual / pcs</label>
+                <div class="input-wrap">
+                  <input
+                    class="input"
+                    id="hargaJualPcs"
+                    placeholder="0"
+                    oninput="
+                      formatRibuan(this);
+                      hitung();
+                    "
+                  /><span class="input-unit">Rp</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Material Cards -->
+        <div
+          class="grid-auto section-body"
+          id="grid-bahan"
+          style="margin-bottom: 16px"
+        >
+          <!-- Milano -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Milano</div>
+                <div class="mat-card-desc">0.35 kg/m × Rp60.000</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['milano'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="milano"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                /><span class="input-unit">m</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span
+                  ><span class="val" id="milanoKg">0 kg</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Bahan</span
+                  ><span class="val" id="milanoBerat">Rp0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Cetak</span
+                  ><span class="val" id="milanoPrint">Rp0</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="milanoTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Emboss -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Emboss</div>
+                <div class="mat-card-desc">0.34 kg/m × Rp60.000</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['emboss'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="emboss"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                /><span class="input-unit">m</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span
+                  ><span class="val" id="embossKg">0 kg</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Bahan</span
+                  ><span class="val" id="embossBerat">Rp0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Cetak</span
+                  ><span class="val" id="embossPrint">Rp0</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="embossTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Airwalk -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Airwalk</div>
+                <div class="mat-card-desc">0.40 kg/m × Rp71.000</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['airwalk'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="airwalk"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                /><span class="input-unit">m</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span
+                  ><span class="val" id="airwalkKg">0 kg</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Bahan</span
+                  ><span class="val" id="airwalkBerat">Rp0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Cetak</span
+                  ><span class="val" id="airwalkPrint">Rp0</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="airwalkTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Ribpoly -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Ribpoly</div>
+                <div class="mat-card-desc">0.40 kg/m × Rp62.000</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['rib'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="rib"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                /><span class="input-unit">m</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span
+                  ><span class="val" id="ribKg">0 kg</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Bahan</span
+                  ><span class="val" id="ribBerat">Rp0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Cetak</span
+                  ><span class="val muted">–</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="ribTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Lotto -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Lotto</div>
+                <div class="mat-card-desc">0.40 kg/m × Rp62.000</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['lotto'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="lotto"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                /><span class="input-unit">m</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span
+                  ><span class="val" id="lottoKg">0 kg</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Bahan</span
+                  ><span class="val" id="lottoBerat">Rp0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Cetak</span
+                  ><span class="val" id="lottoPrint">Rp0</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="lottoTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Custom Material -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Bahan Custom</div>
+                <div class="mat-card-desc">Custom Supplier</div>
+              </div>
+
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['customMeter', 'customKg', 'customHarga'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+
+            <div class="mat-card-body">
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="customMeter"
+                  type="number"
+                  placeholder="Panjang (m)"
+                  oninput="hitung()"
+                />
+                <span class="input-unit">m</span>
+              </div>
+
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="customKg"
+                  type="number"
+                  placeholder="Rasio kg/m"
+                  oninput="hitung()"
+                />
+                <span class="input-unit">kg/m</span>
+              </div>
+
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="customHarga"
+                  placeholder="Harga/kg"
+                  oninput="
+                    formatRibuan(this);
+                    hitung();
+                  "
+                />
+                <span class="input-unit">Rp</span>
+              </div>
+
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Berat</span>
+                  <span class="val" id="customKgTotal">0 kg</span>
+                </div>
+
+                <div class="result-row">
+                  <span class="label">Bahan</span>
+                  <span class="val" id="customBerat">Rp0</span>
+                </div>
+
+                <div class="result-row">
+                  <span class="label">Cetak</span>
+                  <span class="val" id="customPrint">Rp0</span>
+                </div>
+
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span>
+                  <span class="val" id="customTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Costs -->
+        <div
+          class="grid-3 section-body"
+          style="margin-bottom: 16px"
+          id="grid-tambahan"
+        >
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Jahit</div>
+                <div class="mat-card-desc">Vendor Produksi</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['jahitPcs', 'jahitHarga'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <div class="input-wrap" style="margin-bottom: 8px">
+                <input
+                  class="input"
+                  id="jahitPcs"
+                  type="number"
+                  placeholder="Kuantitas"
+                  oninput="hitung()"
+                /><span class="input-unit">pcs</span>
+              </div>
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="jahitHarga"
+                  placeholder="Biaya/pcs"
+                  oninput="
+                    formatRibuan(this);
+                    hitung();
+                  "
+                /><span class="input-unit">Rp</span>
+              </div>
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Total pcs</span
+                  ><span class="val" id="jahitTotalPcs">0</span>
+                </div>
+                <div class="result-row">
+                  <span class="label">Biaya/pcs</span
+                  ><span class="val" id="jahitHargaView">Rp0</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="jahitTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Pengiriman</div>
+                <div class="mat-card-desc">Logistik</div>
+              </div>
+              <button
+                class="btn btn-ghost btn-icon btn-sm"
+                onclick="resetCard(['ongkirNama', 'ongkirHarga', 'ongkirKet'])"
+                title="Reset"
+              >
+                <i class="ri-restart-line"></i>
+              </button>
+            </div>
+            <div class="mat-card-body">
+              <select
+                class="input"
+                id="ongkirNama"
+                onchange="hitung()"
+                style="margin-bottom: 8px"
+              >
+                <option value="">Pilih Ekspedisi</option>
+                <option>Baraka</option>
+                <option>Indah Cargo</option>
+                <option>JNE</option>
+                <option>JNT</option>
+              </select>
+              <div class="input-wrap" style="margin-bottom: 8px">
+                <input
+                  class="input"
+                  id="ongkirHarga"
+                  placeholder="Total biaya"
+                  oninput="
+                    formatRibuan(this);
+                    hitung();
+                  "
+                /><span class="input-unit">Rp</span>
+              </div>
+              <input
+                class="input"
+                id="ongkirKet"
+                placeholder="Catatan (opsional)"
+                oninput="this.value = this.value.toUpperCase()"
+              />
+              <div class="mat-card-results">
+                <div class="result-row">
+                  <span class="label">Ekspedisi</span
+                  ><span class="val" id="ongkirNamaView">–</span>
+                </div>
+                <div class="result-row highlight">
+                  <span class="label">Subtotal</span
+                  ><span class="val" id="ongkirTotal">Rp0</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Extras -->
+          <div class="mat-card">
+            <div class="mat-card-head">
+              <div>
+                <div class="mat-card-name">Pesanan Tambahan</div>
+                <div class="mat-card-desc">Item di luar pesanan utama</div>
+              </div>
+            </div>
+            <div class="mat-card-body">
+              <button class="btn btn-add" onclick="tambahItem()">
+                <i class="ri-add-line"></i> Tambah Pesanan
+              </button>
+              <div id="extraItems"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Block -->
+        <div class="summary-block section-body" id="summary">
+          <div class="summary-grand">
+            <div class="summary-grand-label">TOTAL ESTIMASI MODAL PRODUKSI</div>
+            <div class="summary-grand-value" id="grandTotal">Rp0</div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <div class="s-label">Total Berat</div>
+              <div class="s-val" id="allKg">0 kg</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Total Cetak</div>
+              <div class="s-val" id="allPrint">Rp0</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Total Jahit</div>
+              <div class="s-val" id="allJahit">Rp0</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Total Pengiriman</div>
+              <div class="s-val" id="allOngkir">Rp0</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Total Pendapatan</div>
+              <div class="s-val" id="jualTotal">Rp0</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">HPP / pcs</div>
+              <div class="s-val" id="hppPcs">Rp0</div>
+            </div>
+            <div class="summary-item">
+              <div class="s-label">Profit</div>
+              <div class="s-val" id="profitTotal">Rp0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- -------------- QUICK ESTIMATE --------------------- -->
+      <section class="ws-section collapsible-section" id="qe-section">
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <i id="qe-arrow" class="ri-arrow-right-s-line section-arrow"></i>
+            <div class="section-icon"><i class="ri-flashlight-line"></i></div>
+            Estimasi Cepat
+          </div>
+        </div>
+        <div class="card card-solid section-body">
+          <div class="form-grid-4">
+            <div class="form-group">
+              <label class="form-label">Jumlah</label>
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="estimasiPcs"
+                  type="number"
+                  placeholder="0"
+                  oninput="hitungEstimasi()"
+                /><span class="input-unit">pcs</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Material</label>
+              <select
+                class="input"
+                id="estimasiBahan"
+                onchange="hitungEstimasi()"
+              >
+                <option value="">Pilih material</option>
+                <option value="milano">Milano</option>
+                <option value="emboss">Emboss</option>
+                <option value="airwalk">Airwalk</option>
+                <option value="rib">Ribpoly</option>
+                <option value="lotto">Lotto</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Harga Jual / pcs</label>
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="estimasiHarga"
+                  placeholder="0"
+                  oninput="
+                    formatRibuan(this);
+                    hitungEstimasi();
+                  "
+                /><span class="input-unit">Rp</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rasio (m/pcs)</label>
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  id="estimasiRatio"
+                  type="number"
+                  value="0.7"
+                  step="0.1"
+                  oninput="hitungEstimasi()"
+                /><span class="input-unit">m</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="estimate-summary">
+            <div class="estimate-item">
+              <div class="estimate-label">Total Panjang</div>
+              <div class="estimate-value" id="estimasiMeter">0 m</div>
+            </div>
+
+            <div class="estimate-item">
+              <div class="estimate-label">Est. Modal</div>
+              <div class="estimate-value" id="estimasiModal">Rp0</div>
+            </div>
+
+            <div class="estimate-item">
+              <div class="estimate-label">Total Pendapatan</div>
+              <div class="estimate-value" id="estimasiJual">Rp0</div>
+            </div>
+
+            <div class="estimate-item">
+              <div class="estimate-label">HPP / pcs</div>
+              <div class="estimate-value" id="estimasiHpp">Rp0</div>
+            </div>
+
+            <div class="estimate-item">
+              <div class="estimate-label success">Profit</div>
+              <div class="estimate-value success" id="estimasiProfit">Rp0</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- RIWAYAT COSTING ------------------- -->
+
+      <section
+        class="ws-section collapsible-section"
+        id="costing-history-section"
+      >
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <i
+              id="design-arrow"
+              class="ri-arrow-right-s-line section-arrow"
+            ></i>
+
+            <div class="section-icon">
+              <i class="ri-exchange-dollar-line"></i>
+            </div>
+
+            Riwayat Estimasi
+          </div>
+
+          <div class="ws-section-actions section-body">
+            <div class="search-wrap" style="width: 220px">
+              <i class="search-icon ri-search-line"></i>
+
+              <input
+                class="input"
+                id="costing-history-search"
+                placeholder="Cari riwayat costing..."
+                oninput="renderCostingHistory()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-solid section-body">
+          <div class="table-wrap">
+            <table class="ws-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+
+                  <th
+                    onclick="toggleCustomerSort('costing')"
+                    style="cursor: pointer"
+                  >
+                    Customer
+                  </th>
+
+                  <th>Project</th>
+
+                  <th>Jumlah</th>
+
+                  <th>HPP</th>
+
+                  <th>Harga Jual</th>
+
+                  <th>Profit</th>
+
+                  <th>Tanggal</th>
+
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="costing-history-tbody"></tbody>
+            </table>
+            <div
+              id="costing-history-mobile-list"
+              class="history-mobile-list"
+            ></div>
+            <div id="costing-history-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- RIWAYAT DESAIN -------------------- -->
+
+      <section
+        class="ws-section collapsible-section"
+        id="design-history-section"
+      >
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <i
+              id="design-arrow"
+              class="ri-arrow-right-s-line section-arrow"
+            ></i>
+            <div class="section-icon">
+              <i class="ri-file-list-3-line"></i>
+            </div>
+
+            Riwayat Desain
+          </div>
+
+          <div class="ws-section-actions section-body">
+            <div class="search-wrap" style="width: 220px">
+              <i class="search-icon ri-search-line"></i>
+
+              <input
+                class="input"
+                id="design-history-search"
+                placeholder="Cari riwayat desain..."
+                oninput="renderDesignHistory()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-solid section-body">
+          <div class="table-wrap">
+            <table class="ws-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+
+                  <th
+                    onclick="toggleCustomerSort('design')"
+                    style="cursor: pointer"
+                  >
+                    Customer
+                  </th>
+
+                  <th>Project</th>
+
+                  <th>Kategori</th>
+
+                  <th>Tanggal</th>
+
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="design-history-tbody"></tbody>
+            </table>
+            <div
+              id="design-history-mobile-list"
+              class="history-mobile-list"
+            ></div>
+            <div id="design-history-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================== -->
+      <!-- ---------------- RIWAYAT PRODUKSI ------------------ -->
+
+      <section
+        class="ws-section collapsible-section"
+        id="production-history-section"
+      >
+        <div class="ws-section-head" onclick="toggleSection(this)">
+          <div class="ws-section-title">
+            <i
+              id="production-arrow"
+              class="ri-arrow-right-s-line section-arrow"
+            ></i>
+            <div class="section-icon">
+              <i class="ri-stack-line"></i>
+            </div>
+
+            Riwayat Produksi
+          </div>
+          <div class="ws-section-actions section-body">
+            <div class="search-wrap" style="width: 220px">
+              <i class="search-icon ri-search-line"></i>
+
+              <input
+                class="input"
+                id="production-history-search"
+                placeholder="Cari riwayat produksi..."
+                oninput="renderProductionHistory()"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="card card-solid section-body">
+          <div class="table-wrap">
+            <table class="ws-table">
+              <thead>
+                <tr>
+                  <th>No</th>
+
+                  <th
+                    onclick="toggleCustomerSort('production')"
+                    style="cursor: pointer"
+                  >
+                    Customer
+                  </th>
+
+                  <th>Project</th>
+
+                  <th>Material</th>
+
+                  <th>Jumlah</th>
+
+                  <th>Tanggal</th>
+
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody id="production-history-tbody"></tbody>
+            </table>
+            <div
+              id="production-history-mobile-list"
+              class="history-mobile-list"
+            ></div>
+            <div id="production-history-pagination" class="pagination"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ==================================================== -->
+    <!-- ---------------------- MODALS ---------------------- -->
+
+    <!-- Modal Design -->
+    <div class="modal-overlay" id="modal-design">
+      <div class="ws-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-palette-line"></i> Pesanan Desain
+          </h3>
+          <button
+            class="btn btn-ghost btn-icon"
+            onclick="closeModal('modal-design')"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Customer</label>
+          <input
+            type="text"
+            class="input"
+            id="do-customer"
+            placeholder="Masukkan customer"
+            oninput="this.value = this.value.toUpperCase()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Project</label>
+          <input
+            type="text"
+            class="input"
+            id="do-design"
+            placeholder="Masukkan nama project"
+            oninput="this.value = this.value.toUpperCase()"
+          />
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Kategori</label>
+            <select class="input" id="do-jenis">
+              <option value="">Pilih kategori</option>
+              <option value="DESAIN">DESAIN</option>
+              <option value="DTF">DTF</option>
+              <option value="JERSEY">JERSEY</option>
+              <option value="KAOS">KAOS</option>
+              <option value="PLASTISOL">PLASTISOL</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Deadline</label>
+            <input type="date" class="input" id="do-deadline" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Catatan</label>
+          <textarea
+            class="input"
+            id="do-notes"
+            placeholder="Tambahkan catatan..."
+            oninput="this.value = this.value.toUpperCase()"
+          ></textarea>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+          "
+        >
+          <button class="btn btn-ghost" onclick="closeModal('modal-design')">
+            Batal
+          </button>
+          <button class="btn btn-solid" onclick="saveDesignOrder()">
+            <i class="ri-save-line"></i> Simpan Desain
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Production -->
+    <div class="modal-overlay" id="modal-production">
+      <div class="ws-modal production-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-printer-line"></i>
+            <span id="po-modal-title">Tambah Produksi</span>
+          </h3>
+          <button
+            class="btn btn-ghost btn-icon"
+            onclick="closeModal('modal-production')"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Customer *</label>
+            <input
+              class="input"
+              id="po-customer"
+              placeholder="Masukkan customer"
+              oninput="this.value = this.value.toUpperCase()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Project</label>
+            <input
+              class="input"
+              id="po-team"
+              placeholder="Masukkan nama project"
+              oninput="this.value = this.value.toUpperCase()"
+            />
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="form-label">Jumlah (otomatis)</label>
+            <div class="input-wrap">
+              <input
+                class="input"
+                id="po-qty"
+                type="number"
+                placeholder="0"
+                readonly
+              />
+              <span class="input-unit">pcs</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Material (otomatis)</label>
+            <input
+              class="input"
+              id="po-material"
+              placeholder="Dari produk"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Deadline</label>
+            <input class="input" id="po-deadline" type="date" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Catatan</label>
+          <textarea
+            class="input"
+            id="po-notes"
+            placeholder="Tambahkan catatan..."
+            oninput="this.value = this.value.toUpperCase()"
+          ></textarea>
+        </div>
+
+        <div class="invoice-divider"></div>
+
+        <div class="invoice-title">
+          <i class="ri-file-list-3-line"></i>
+          Item Produksi
+        </div>
+
+        <div id="production-items"></div>
+
+        <button
+          class="btn btn-ghost btn-sm"
+          style="margin-top: 12px"
+          onclick="addProductionItem()"
+        >
+          <i class="ri-add-line"></i>
+          Tambah Item
+        </button>
+
+        <div class="invoice-divider"></div>
+
+        <div class="invoice-summary">
+          <div class="form-group">
+            <label class="form-label">Subtotal</label>
+            <input class="input" id="po-subtotal" readonly />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Diskon Produksi</label>
+            <input
+              class="input"
+              id="po-discount"
+              value="0"
+              type="number"
+              min="0"
+              oninput="updateProductionTotals()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total</label>
+            <input
+              class="input"
+              id="po-total"
+              readonly
+              style="font-weight: 700; color: var(--green)"
+            />
+          </div>
+        </div>
+
+        <div class="invoice-footer">
+          <button
+            class="btn btn-ghost"
+            onclick="closeModal('modal-production')"
+          >
+            Batal
+          </button>
+          <button class="btn btn-solid" onclick="saveProductionOrder()">
+            <i class="ri-save-line"></i> Simpan Produksi
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Note -->
+    <div class="modal-overlay" id="modal-production-note">
+      <div class="ws-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Catatan Produksi</h3>
+          <button
+            class="btn btn-ghost btn-icon"
+            onclick="closeModal('modal-production-note')"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+        <input type="hidden" id="production-note-id" />
+        <div class="form-group">
+          <label class="form-label">Tambahkan Catatan Produksi</label>
+          <textarea
+            class="input"
+            id="production-note-text"
+            placeholder="Catat pembaruan produksi..."
+            oninput="this.value = this.value.toUpperCase()"
+          ></textarea>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+          "
+        >
+          <button
+            class="btn btn-ghost"
+            onclick="closeModal('modal-production-note')"
+          >
+            Batal
+          </button>
+          <button class="btn btn-solid" onclick="saveProductionNote()">
+            Simpan Catatan
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Task -->
+    <div class="modal-overlay" id="modal-task">
+      <div class="ws-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">Tugas Baru</h3>
+          <button
+            class="btn btn-ghost btn-icon"
+            onclick="closeModal('modal-task')"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deskripsi Tugas *</label>
+          <input
+            class="input"
+            id="task-text"
+            placeholder="Apa yang perlu diselesaikan?"
+          />
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Prioritas</label>
+            <select class="input" id="task-priority">
+              <option value="normal">Normal</option>
+              <option value="high">Tinggi</option>
+              <option value="urgent">Mendesak</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tenggat Waktu</label>
+            <input class="input" id="task-due" type="date" />
+          </div>
+        </div>
+        <div
+          style="
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 16px;
+          "
+        >
+          <button class="btn btn-ghost" onclick="closeModal('modal-task')">
+            Batal
+          </button>
+          <button class="btn btn-solid" onclick="saveTask()">
+            <i class="ri-save-line"></i> Tambah Tugas
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Invoice -->
+    <div class="modal-overlay" id="modal-invoice">
+      <div class="ws-modal invoice-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-file-add-line"></i> Tambah Invoice
+          </h3>
+          <button
+            class="btn btn-ghost btn-icon"
+            onclick="closeModal('modal-invoice')"
+          >
+            <i class="ri-close-line"></i>
+          </button>
+        </div>
+
+        <!-- ROW 1 -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Customer *</label>
+            <input
+              class="input"
+              id="invoice-customer"
+              placeholder="Masukkan customer"
+              required
+              oninput="this.value = this.value.toUpperCase()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Invoice (Otomatis)</label>
+            <input
+              class="input"
+              id="invoice-number"
+              readonly
+              style="opacity: 0.7; cursor: not-allowed"
+            />
+          </div>
+        </div>
+
+        <!-- ROW 2 -->
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Tanggal</label>
+            <input type="date" class="input" id="invoice-date" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Status</label>
+            <select class="input" id="invoice-status">
+              <option value="draft">Belum Bayar</option>
+              <option value="paid">Lunas</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="invoice-divider"></div>
+
+        <!-- ITEM -->
+        <div class="invoice-title">
+          <i class="ri-file-list-3-line"></i>
+          Item
+        </div>
+
+        <div class="invoice-item-head">
+          <div></div>
+
+          <div>Ukuran</div>
+
+          <div>Jumlah</div>
+
+          <div>Harga</div>
+
+          <div>Total</div>
+
+          <div></div>
+        </div>
+
+        <div id="invoice-items"></div>
+
+        <button
+          class="btn btn-ghost btn-sm"
+          style="margin-top: 12px"
+          onclick="addInvoiceItem()"
+        >
+          <i class="ri-add-line"></i>
+          Tambah Item
+        </button>
+
+        <div class="invoice-divider"></div>
+
+        <!-- TOTAL -->
+        <div class="invoice-summary">
+          <div class="form-group">
+            <label class="form-label">Subtotal</label>
+            <input
+              class="input"
+              id="invoice-subtotal"
+              readonly
+              style="font-weight: 600"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Diskon</label>
+            <input
+              class="input"
+              id="invoice-discount"
+              value="0"
+              type="number"
+              min="0"
+              oninput="updateInvoiceTotals()"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Total</label>
+            <input
+              class="input"
+              id="invoice-total"
+              readonly
+              style="font-weight: 700; color: var(--green)"
+            />
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 16px">
+          <label class="form-label">Catatan</label>
+
+          <textarea
+            class="input"
+            id="invoice-note"
+            placeholder="Tambahkan catatan..."
+            oninput="this.value = this.value.toUpperCase()"
+          ></textarea>
+        </div>
+
+        <!-- FOOTER: Action Buttons -->
+        <div class="invoice-footer">
+          <button
+            class="btn btn-ghost"
+            type="button"
+            onclick="closeModal('modal-invoice')"
+          >
+            Batal
+          </button>
+          <button
+            class="btn btn-ghost"
+            type="button"
+            onclick="previewCurrentInvoice()"
+          >
+            <i class="ri-eye-line"></i> Preview Nota
+          </button>
+          <button class="btn btn-solid" type="button" onclick="saveInvoice()">
+            <i class="ri-save-line"></i> Simpan Invoice
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- PREVIEW INVOICE -->
+    <!-- ===================================================== -->
+
+    <div class="modal-overlay" id="modal-preview-invoice">
+      <div class="invoice-viewer">
+        <!-- HEADER -->
+
+        <div class="invoice-preview-header">
+          <div class="invoice-preview-title">
+            <i class="ri-file-paper-2-line"></i>
+
+            <span>Preview Invoice</span>
+          </div>
+
+          <div class="invoice-preview-toolbar">
+            <button class="btn btn-ghost btn-sm" onclick="zoomOutInvoice()">
+              <i class="ri-subtract-line"></i>
+            </button>
+
+            <span id="invoice-zoom-value"> 100% </span>
+
+            <button class="btn btn-ghost btn-sm" onclick="zoomInInvoice()">
+              <i class="ri-add-line"></i>
+            </button>
+
+            <button class="btn btn-ghost btn-sm" onclick="fitInvoiceWidth()">
+              <i class="ri-fullscreen-line"></i>
+            </button>
+
+            <button
+              class="btn btn-ghost btn-sm"
+              onclick="downloadInvoiceAsImage()"
+            >
+              <i class="ri-download-2-line"></i>
+            </button>
+
+            <button
+              class="btn btn-ghost btn-sm"
+              onclick="closeModal('modal-preview-invoice')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- CANVAS -->
+
+        <div class="invoice-canvas">
+          <div class="invoice-stage">
+            <div class="invoice-paper" id="invoice-paper"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">
+      <i class="toast-icon ri-check-circle-fill"></i>
+      <span id="toast-msg">Tersimpan</span>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+    <footer class="app-footer">
+      <picture class="footer-brand">
+        <source media="(max-width:767px)" srcset="/progress-footer.svg" />
+        <source media="(min-width:768px)" srcset="/progress-footer.svg" />
+        <img src="/progress-footer.svg" alt="Progress Printshop" />
+      </picture>
+    </footer>
+  </body>
+</html>
