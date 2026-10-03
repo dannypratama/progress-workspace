@@ -1,0 +1,9 @@
+# Konfigurasi Netlify
+# Situs statis tanpa build step — index.html dilayani langsung dari root.
+
+[build]
+  publish = "."
+
+[build.environment]
+  # Matikan Netlify Drawer (badge/banner yang disuntikkan ke halaman).
+  NETLIFY_SKIP_INJECT_DRAWER = "true"
