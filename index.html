@@ -8,6 +8,15 @@
     />
 
     <meta content="#1a1b1c" name="theme-color" />
+    <meta name="robots" content="noindex, nofollow" />
+<!-- Preload background lock screen (desktop saja; mobile tidak pakai gambar) -->
+    <link
+      rel="preload"
+      as="image"
+      href="assets/images/lockscreen-bg.webp"
+      media="(min-width: 769px)"
+      fetchpriority="high"
+    />
     <meta content="#1a1b1c" name="msapplication-navbutton-color" />
     <head>
       <meta name="mobile-web-app-capable" content="yes" />
@@ -21,7 +30,7 @@
     />
     <title>Progress Printshop ★ Workspace</title>
 
-    <!-- Typography: Inter -->
+<!-- Typography: Inter (Google Fonts) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -29,7 +38,7 @@
       rel="stylesheet"
     />
 
-    <!-- Icons -->
+<!-- Icons: RemixIcon -->
     <link
       href="https://cdn.jsdelivr.net/npm/remixicon@4.9.1/fonts/remixicon.css"
       rel="stylesheet"
@@ -37,26 +46,27 @@
     <link
       rel="icon"
       type="image/png"
-      href="https://i.ibb.co.com/Mb1TFB2/favicon.png"
+      href="./assets/icons/favicon.png"
     />
 
-    <!-- External JS Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Library eksternal: html2canvas, SortableJS, Lenis -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
 
     <link rel="stylesheet" href="css/variables.css" />
     <link rel="stylesheet" href="css/main.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="stylesheet" href="css/mobile.css" />
   </head>
-  <body>
-    <!-- ==================================================== -->
-    <!-- ---------------------- NAVBAR ---------------------- -->
+  <body class="pin-locked">
+<!-- =================================================== -->
+<!-- SECTION: NAVBAR                                     -->
+<!-- =================================================== -->
     <nav class="nav">
       <a class="nav-brand" href="#">
         <img
-          src="https://i.ibb.co.com/bRGtz1hJ/LOGO-PROGRESS.png"
+src="./assets/images/logo-progress.png"
           alt="Logo"
           class="nav-logo-img"
           onerror="this.style.display = 'none'"
@@ -64,7 +74,27 @@
         <span class="nav-name">Progress<span> ★ </span>Workspace</span>
       </a>
 
+      <div class="nav-center-menu hide-mobile">
+        <button class="nav-link-btn" onclick="scrollToSection('design-section')">
+          <i class="ri-palette-line"></i> Desain
+        </button>
+        <button class="nav-link-btn" onclick="scrollToSection('production-section')">
+          <i class="ri-printer-line"></i> Produksi
+        </button>
+        <button class="nav-link-btn" onclick="scrollToSection('invoice-section')">
+          <i class="ri-file-paper-2-line"></i> Invoice
+        </button>
+      </div>
+
       <div class="nav-actions">
+        <button
+          class="btn btn-ghost btn-sm btn-icon"
+          onclick="openPinSettings()"
+          title="Pengaturan PIN"
+        >
+          <i class="ri-lock-2-line"></i>
+        </button>
+
         <button
           class="btn btn-ghost btn-sm btn-icon"
           onclick="toggleDark()"
@@ -83,16 +113,16 @@
           </button>
 
           <div class="nav-add-menu" id="nav-add-menu">
-            <button onclick="openModal('modal-design')">
+            <button onclick="openAddDesignModal()">
               <i class="ri-palette-line"></i> Pesanan Desain
             </button>
-            <button onclick="openModal('modal-production')">
+            <button onclick="openAddProductionModal()">
               <i class="ri-printer-line"></i> Pesanan Produksi
             </button>
           </div>
         </div>
 
-        <!-- MOBILE MENU -->
+<!-- SUB: MENU MOBILE -->
 
         <div class="mobile-nav-dropdown">
           <button
@@ -110,7 +140,7 @@
             </button>
 
             <button onclick="scrollToSection('tasks-section')">
-              Tugas Harian
+              Pusat Kontrol
             </button>
 
             <button onclick="scrollToSection('invoice-section')">
@@ -129,11 +159,13 @@
       </div>
     </nav>
 
-    <!-- ==================================================== -->
-    <!-- ------------------- MAIN WORKSPACE ----------------- -->
+<!-- =================================================== -->
+<!-- WRAPPER: MAIN WORKSPACE                             -->
+<!-- =================================================== -->
     <main class="workspace">
-      <!-- ==================================================== -->
-      <!-- ---------------------- HERO ------------------------ -->
+<!-- =================================================== -->
+<!-- SECTION: HERO                                       -->
+<!-- =================================================== -->
       <section class="hero ws-section" id="hero-section">
         <div class="hero-content">
           <div class="hero-meta">
@@ -185,8 +217,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ------------------- DESIGN WORKFLOW ---------------- -->
+<!-- =================================================== -->
+<!-- SECTION: ALUR KERJA DESAIN                          -->
+<!-- =================================================== -->
       <section class="ws-section" id="pipeline-section">
         <div class="ws-section-head">
           <div class="ws-section-title">
@@ -227,8 +260,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ---------------- DESIGN ORDERS --------------------- -->
+<!-- =================================================== -->
+<!-- SECTION: DAFTAR PESANAN DESAIN                      -->
+<!-- =================================================== -->
       <section class="ws-section" id="design-section">
         <div class="ws-section-head">
           <div class="ws-section-title">
@@ -245,11 +279,26 @@
               style="width: 180px"
               onchange="setDesignFilter(this.value)"
             >
-              <option value="all">Semua Desain</option>
-              <option value="progress">Sedang Berjalan</option>
-              <option value="urgent">Mendesak</option>
-              <option value="overdue">Terlambat</option>
-              <option value="done">Selesai</option>
+              <option value="">Status Pesanan</option>
+              <option value="design">Antrean Desain</option>
+              <option value="revisi">Revisi</option>
+              <option value="done">Selesai / Lunas</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="design-filter-customer"
+              style="width: 170px"
+              onchange="renderDesignOrders()"
+            >
+              <option value="">Pilih Customer</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="design-filter-kategori"
+              style="width: 170px"
+              onchange="renderDesignOrders()"
+            >
+              <option value="">Pilih Kategori</option>
             </select>
             <div class="search-wrap" style="width: 220px">
               <i class="search-icon ri-search-line"></i>
@@ -257,10 +306,18 @@
                 class="input"
                 id="design-search"
                 placeholder="Cari desain..."
-                oninput="renderDesignOrders()"
+                oninput="debouncedRenderDesignOrders()"
               />
             </div>
-            <button class="btn btn-solid" onclick="openModal('modal-design')">
+            <button
+              class="btn btn-solid"
+              id="btn-recap-design"
+              title="Rekap Tagihan Customer"
+              onclick="openWaRecapFromFilter()"
+            >
+              <i class="ri-file-list-3-line"></i>
+            </button>
+            <button class="btn btn-solid" onclick="openAddDesignModal()">
               <i class="ri-add-line"></i> Tambah Desain
             </button>
           </div>
@@ -271,14 +328,7 @@
               <thead>
                 <tr>
                   <th>No</th>
-
-                  <th
-                    onclick="toggleCustomerSort('designOrder')"
-                    style="cursor: pointer"
-                  >
-                    Customer
-                  </th>
-
+                  <th>Customer</th>
                   <th>Project</th>
                   <th>Kategori</th>
                   <th>Deadline</th>
@@ -294,8 +344,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ------------ PRODUCTION PIPELINE ------------------- -->
+<!-- =================================================== -->
+<!-- SECTION: PIPELINE PRODUKSI                          -->
+<!-- =================================================== -->
       <section class="ws-section" id="production-pipeline-section">
         <div class="ws-section-head">
           <div class="ws-section-title">
@@ -354,9 +405,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- --------------- PRODUCTION ORDERS ------------------ -->
-      <!-- ==================================================== -->
+<!-- =================================================== -->
+<!-- SECTION: DAFTAR PESANAN PRODUKSI                    -->
+<!-- =================================================== -->
       <section class="ws-section" id="production-section">
         <div class="ws-section-head">
           <div class="ws-section-title">
@@ -373,11 +424,27 @@
               style="width: 180px"
               onchange="renderProductionOrders()"
             >
-              <option value="all">Semua Pesanan</option>
-              <option value="progress">Sedang Berjalan</option>
-              <option value="urgent">Mendesak</option>
-              <option value="overdue">Terlambat</option>
-              <option value="done">Selesai</option>
+              <option value="">Status Pesanan</option>
+              <option value="design">Antrean Desain</option>
+              <option value="production">Dalam Produksi</option>
+              <option value="invoice">Penerbitan Invoice</option>
+              <option value="done">Selesai / Lunas</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="production-filter-customer"
+              style="width: 170px"
+              onchange="renderProductionOrders()"
+            >
+              <option value="">Pilih Customer</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="production-filter-material"
+              style="width: 170px"
+              onchange="renderProductionOrders()"
+            >
+              <option value="">Pilih Material</option>
             </select>
 
             <div class="search-wrap" style="width: 220px">
@@ -386,13 +453,13 @@
                 class="input"
                 id="production-search"
                 placeholder="Cari produksi..."
-                oninput="renderProductionOrders()"
+                oninput="debouncedRenderProductionOrders()"
               />
             </div>
 
             <button
               class="btn btn-solid"
-              onclick="openModal('modal-production')"
+              onclick="openAddProductionModal()"
             >
               <i class="ri-add-line"></i>
               Tambah Produksi
@@ -405,14 +472,7 @@
             <thead>
               <tr>
                 <th>No</th>
-
-                <th
-                  onclick="toggleCustomerSort('productionOrder')"
-                  style="cursor: pointer"
-                >
-                  Customer
-                </th>
-
+                <th>Customer</th>
                 <th>Project</th>
                 <th>Jumlah</th>
                 <th>Material</th>
@@ -429,67 +489,10 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ---------------- TASKS ---------------------------- -->
-      <section class="ws-section" id="tasks-section">
-        <div class="ws-section-head">
-          <div class="ws-section-title">
-            <div class="section-icon"><i class="ri-list-check-3"></i></div>
-            Tugas Harian
-          </div>
 
-          <div class="ws-section-actions">
-            <button class="btn btn-ghost" onclick="openModal('modal-task')">
-              <i class="ri-add-line"></i> Tambah Tugas
-            </button>
-          </div>
-        </div>
-        <div class="grid-2">
-          <div class="card card-solid">
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 14px;
-              "
-            >
-              <div style="font-size: 13px; font-weight: 600">Tertunda</div>
-              <span class="badge-status badge-revisi" id="task-pending-count"
-                >0</span
-              >
-            </div>
-            <div id="task-list-pending">
-              <div class="empty-state">
-                <i class="ri-checkbox-circle-line"></i>Tidak ada tugas tertunda
-              </div>
-            </div>
-          </div>
-          <div class="card card-solid">
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 14px;
-              "
-            >
-              <div style="font-size: 13px; font-weight: 600">Selesai</div>
-              <span class="badge-status badge-done" id="task-done-count"
-                >0</span
-              >
-            </div>
-            <div id="task-list-done">
-              <div class="empty-state">
-                <i class="ri-check-double-line"></i>Tidak ada tugas selesai
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- ---------------- INVOICE ------------------ -->
+<!-- =================================================== -->
+<!-- SECTION: DAFTAR INVOICE                             -->
+<!-- =================================================== -->
 
       <section class="ws-section collapsible-section" id="invoice-section">
         <div class="ws-section-head" onclick="toggleSection(this)">
@@ -508,14 +511,14 @@
               onchange="renderInvoices()"
               style="width: 170px"
             >
-              <option value="all">Semua Invoice</option>
-              <option value="draft">DP</option>
-              <option value="paid">LUNAS</option>
+              <option value="">Status Pesanan</option>
+              <option value="draft">Belum Bayar / DP</option>
+              <option value="paid">Lunas</option>
             </select>
 
             <div
               class="search-wrap"
-              oninput="renderInvoices()"
+              oninput="debouncedRenderInvoices()"
               style="width: 220px"
             >
               <i class="search-icon ri-search-line"></i>
@@ -571,10 +574,74 @@
         </div>
       </section>
 
+<!-- =================================================== -->
+<!-- SECTION: TASKS (PUSAT KONTROL)                      -->
+<!-- =================================================== -->
+      <section class="ws-section" id="tasks-section">
+        <div class="ws-section-head">
+          <div class="ws-section-title">
+            <div class="section-icon"><i class="ri-list-check-3"></i></div>
+            Pusat Kontrol
+          </div>
+
+          <div class="ws-section-actions">
+            <button class="btn btn-ghost" onclick="copyDailyReport()">
+              <i class="ri-file-copy-2-line"></i> Salin Laporan Harian
+            </button>
+            <button class="btn btn-ghost" onclick="openModal('modal-task')">
+              <i class="ri-add-line"></i> Tambah Tugas
+            </button>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card card-solid">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+              "
+            >
+              <div style="font-size: 13px; font-weight: 600">Tertunda</div>
+              <span class="badge-status badge-revisi" id="task-pending-count"
+                >0</span
+              >
+            </div>
+            <div id="task-list-pending">
+              <div class="empty-state">
+                <i class="ri-checkbox-circle-line"></i>Tidak ada tugas tertunda
+              </div>
+            </div>
+          </div>
+          <div class="card card-solid">
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 14px;
+              "
+            >
+              <div style="font-size: 13px; font-weight: 600">Selesai</div>
+              <span class="badge-status badge-done" id="task-done-count"
+                >0</span
+              >
+            </div>
+            <div id="task-list-done">
+              <div class="empty-state">
+                <i class="ri-check-double-line"></i>Tidak ada tugas selesai
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div class="section-divider"></div>
 
-      <!-- ==================================================== -->
-      <!-- ------------- COST ESTIMATOR (GEMINI CORE) -------- -->
+<!-- =================================================== -->
+<!-- SECTION: ESTIMASI HARGA PRODUKSI                    -->
+<!-- =================================================== -->
       <section class="ws-section collapsible-section" id="estimator-section">
         <div class="ws-section-head" onclick="toggleSection(this)">
           <div class="ws-section-title">
@@ -585,7 +652,17 @@
             <div class="section-icon"><i class="ri-calculator-line"></i></div>
             Estimasi Produksi
           </div>
-          <div class="ws-section-actions section-body">
+          <div class="ws-section-actions section-body" onclick="event.stopPropagation()">
+            <select
+              class="input"
+              id="estimator-vendor"
+              style="width: 170px"
+              title="Vendor bahan & printpress"
+              onchange="applyEstimatorVendor(this.value)"
+            >
+              <option value="sublimation">R</option>
+              <option value="alpa">A</option>
+            </select>
             <button class="btn btn-ghost btn-sm" onclick="resetFormCosting()">
               <i class="ri-refresh-line"></i>
               <span class="hide-mobile">Kosongkan Form</span>
@@ -598,7 +675,7 @@
           </div>
         </div>
 
-        <!-- Customer Info -->
+<!-- SUB: INFO CUSTOMER -->
         <div class="card card-solid section-body" style="margin-bottom: 16px">
           <div class="form-grid-3">
             <div class="form-group">
@@ -607,7 +684,7 @@
                 class="input"
                 id="customer"
                 placeholder="Nama customer"
-                oninput="this.value = this.value.toUpperCase()"
+                oninput="handleUppercaseInput(this)"
               />
             </div>
             <div class="form-group">
@@ -616,7 +693,7 @@
                 class="input"
                 id="team"
                 placeholder="Klub / Tim"
-                oninput="this.value = this.value.toUpperCase()"
+                oninput="handleUppercaseInput(this)"
               />
             </div>
             <div class="form-grid-2">
@@ -650,18 +727,18 @@
           </div>
         </div>
 
-        <!-- Material Cards -->
+<!-- SUB: KARTU BAHAN -->
         <div
           class="grid-auto section-body"
           id="grid-bahan"
           style="margin-bottom: 16px"
         >
-          <!-- Milano -->
+<!-- BAHAN: MILANO -->
           <div class="mat-card">
             <div class="mat-card-head">
               <div>
-                <div class="mat-card-name">Milano</div>
-                <div class="mat-card-desc">0.35 kg/m × Rp60.000</div>
+                <div class="mat-card-name"><span id="mat-name-milano">Milano</span></div>
+                <div class="mat-card-desc"><span id="mat-desc-milano">0.35 kg/m × Rp60.000</span></div>
               </div>
               <button
                 class="btn btn-ghost btn-icon btn-sm"
@@ -701,12 +778,12 @@
               </div>
             </div>
           </div>
-          <!-- Emboss -->
+<!-- BAHAN: EMBOSS -->
           <div class="mat-card">
             <div class="mat-card-head">
               <div>
-                <div class="mat-card-name">Emboss</div>
-                <div class="mat-card-desc">0.34 kg/m × Rp60.000</div>
+                <div class="mat-card-name"><span id="mat-name-emboss">Emboss</span></div>
+                <div class="mat-card-desc"><span id="mat-desc-emboss">0.34 kg/m × Rp60.000</span></div>
               </div>
               <button
                 class="btn btn-ghost btn-icon btn-sm"
@@ -746,57 +823,12 @@
               </div>
             </div>
           </div>
-          <!-- Airwalk -->
+<!-- BAHAN: RIBPOLY -->
           <div class="mat-card">
             <div class="mat-card-head">
               <div>
-                <div class="mat-card-name">Airwalk</div>
-                <div class="mat-card-desc">0.40 kg/m × Rp71.000</div>
-              </div>
-              <button
-                class="btn btn-ghost btn-icon btn-sm"
-                onclick="resetCard(['airwalk'])"
-                title="Reset"
-              >
-                <i class="ri-restart-line"></i>
-              </button>
-            </div>
-            <div class="mat-card-body">
-              <div class="input-wrap">
-                <input
-                  class="input"
-                  id="airwalk"
-                  type="number"
-                  placeholder="Panjang (m)"
-                  oninput="hitung()"
-                /><span class="input-unit">m</span>
-              </div>
-              <div class="mat-card-results">
-                <div class="result-row">
-                  <span class="label">Berat</span
-                  ><span class="val" id="airwalkKg">0 kg</span>
-                </div>
-                <div class="result-row">
-                  <span class="label">Bahan</span
-                  ><span class="val" id="airwalkBerat">Rp0</span>
-                </div>
-                <div class="result-row">
-                  <span class="label">Cetak</span
-                  ><span class="val" id="airwalkPrint">Rp0</span>
-                </div>
-                <div class="result-row highlight">
-                  <span class="label">Subtotal</span
-                  ><span class="val" id="airwalkTotal">Rp0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Ribpoly -->
-          <div class="mat-card">
-            <div class="mat-card-head">
-              <div>
-                <div class="mat-card-name">Ribpoly</div>
-                <div class="mat-card-desc">0.40 kg/m × Rp62.000</div>
+                <div class="mat-card-name"><span id="mat-name-rib">Ribpoly</span></div>
+                <div class="mat-card-desc"><span id="mat-desc-rib">0.40 kg/m × Rp62.000</span></div>
               </div>
               <button
                 class="btn btn-ghost btn-icon btn-sm"
@@ -827,7 +859,7 @@
                 </div>
                 <div class="result-row">
                   <span class="label">Cetak</span
-                  ><span class="val muted">–</span>
+                  ><span class="val" id="ribPrint">Rp0</span>
                 </div>
                 <div class="result-row highlight">
                   <span class="label">Subtotal</span
@@ -836,52 +868,7 @@
               </div>
             </div>
           </div>
-          <!-- Lotto -->
-          <div class="mat-card">
-            <div class="mat-card-head">
-              <div>
-                <div class="mat-card-name">Lotto</div>
-                <div class="mat-card-desc">0.40 kg/m × Rp62.000</div>
-              </div>
-              <button
-                class="btn btn-ghost btn-icon btn-sm"
-                onclick="resetCard(['lotto'])"
-                title="Reset"
-              >
-                <i class="ri-restart-line"></i>
-              </button>
-            </div>
-            <div class="mat-card-body">
-              <div class="input-wrap">
-                <input
-                  class="input"
-                  id="lotto"
-                  type="number"
-                  placeholder="Panjang (m)"
-                  oninput="hitung()"
-                /><span class="input-unit">m</span>
-              </div>
-              <div class="mat-card-results">
-                <div class="result-row">
-                  <span class="label">Berat</span
-                  ><span class="val" id="lottoKg">0 kg</span>
-                </div>
-                <div class="result-row">
-                  <span class="label">Bahan</span
-                  ><span class="val" id="lottoBerat">Rp0</span>
-                </div>
-                <div class="result-row">
-                  <span class="label">Cetak</span
-                  ><span class="val" id="lottoPrint">Rp0</span>
-                </div>
-                <div class="result-row highlight">
-                  <span class="label">Subtotal</span
-                  ><span class="val" id="lottoTotal">Rp0</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- Custom Material -->
+<!-- BAHAN: CUSTOM SUPPLIER -->
           <div class="mat-card">
             <div class="mat-card-head">
               <div>
@@ -959,7 +946,7 @@
           </div>
         </div>
 
-        <!-- Additional Costs -->
+<!-- SUB: BIAYA TAMBAHAN (JAHIT & ONGKIR) -->
         <div
           class="grid-3 section-body"
           style="margin-bottom: 16px"
@@ -1058,7 +1045,7 @@
                 class="input"
                 id="ongkirKet"
                 placeholder="Catatan (opsional)"
-                oninput="this.value = this.value.toUpperCase()"
+                oninput="handleUppercaseInput(this)"
               />
               <div class="mat-card-results">
                 <div class="result-row">
@@ -1072,7 +1059,7 @@
               </div>
             </div>
           </div>
-          <!-- Extras -->
+<!-- SUB: ITEM TAMBAHAN -->
           <div class="mat-card">
             <div class="mat-card-head">
               <div>
@@ -1089,7 +1076,7 @@
           </div>
         </div>
 
-        <!-- Summary Block -->
+<!-- SUB: BLOK RINGKASAN -->
         <div class="summary-block section-body" id="summary">
           <div class="summary-grand">
             <div class="summary-grand-label">TOTAL ESTIMASI MODAL PRODUKSI</div>
@@ -1128,8 +1115,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- -------------- QUICK ESTIMATE --------------------- -->
+<!-- =================================================== -->
+<!-- SECTION: ESTIMASI CEPAT                             -->
+<!-- =================================================== -->
       <section class="ws-section collapsible-section" id="qe-section">
         <div class="ws-section-head" onclick="toggleSection(this)">
           <div class="ws-section-title">
@@ -1225,8 +1213,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ---------------- RIWAYAT COSTING ------------------- -->
+<!-- =================================================== -->
+<!-- SECTION: RIWAYAT ESTIMASI                           -->
+<!-- =================================================== -->
 
       <section
         class="ws-section collapsible-section"
@@ -1246,7 +1235,23 @@
             Riwayat Estimasi
           </div>
 
-          <div class="ws-section-actions section-body">
+          <div class="ws-section-actions section-body" onclick="event.stopPropagation()">
+            <select
+              class="input hide-mobile"
+              id="costing-filter-customer"
+              style="width: 170px"
+              onchange="renderCostingHistory()"
+            >
+              <option value="">Pilih Customer</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="costing-filter-project"
+              style="width: 170px"
+              onchange="renderCostingHistory()"
+            >
+              <option value="">Pilih Project</option>
+            </select>
             <div class="search-wrap" style="width: 220px">
               <i class="search-icon ri-search-line"></i>
 
@@ -1254,7 +1259,7 @@
                 class="input"
                 id="costing-history-search"
                 placeholder="Cari riwayat costing..."
-                oninput="renderCostingHistory()"
+                oninput="debouncedRenderCostingHistory()"
               />
             </div>
           </div>
@@ -1266,14 +1271,7 @@
               <thead>
                 <tr>
                   <th>No</th>
-
-                  <th
-                    onclick="toggleCustomerSort('costing')"
-                    style="cursor: pointer"
-                  >
-                    Customer
-                  </th>
-
+                  <th>Customer</th>
                   <th>Project</th>
 
                   <th>Jumlah</th>
@@ -1301,8 +1299,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ---------------- RIWAYAT DESAIN -------------------- -->
+<!-- =================================================== -->
+<!-- SECTION: RIWAYAT DESAIN                             -->
+<!-- =================================================== -->
 
       <section
         class="ws-section collapsible-section"
@@ -1321,7 +1320,23 @@
             Riwayat Desain
           </div>
 
-          <div class="ws-section-actions section-body">
+          <div class="ws-section-actions section-body" onclick="event.stopPropagation()">
+            <select
+              class="input hide-mobile"
+              id="design-history-filter-customer"
+              style="width: 170px"
+              onchange="renderDesignHistory()"
+            >
+              <option value="">Pilih Customer</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="design-history-filter-kategori"
+              style="width: 170px"
+              onchange="renderDesignHistory()"
+            >
+              <option value="">Pilih Kategori</option>
+            </select>
             <div class="search-wrap" style="width: 220px">
               <i class="search-icon ri-search-line"></i>
 
@@ -1329,7 +1344,7 @@
                 class="input"
                 id="design-history-search"
                 placeholder="Cari riwayat desain..."
-                oninput="renderDesignHistory()"
+                oninput="debouncedRenderDesignHistory()"
               />
             </div>
           </div>
@@ -1341,14 +1356,7 @@
               <thead>
                 <tr>
                   <th>No</th>
-
-                  <th
-                    onclick="toggleCustomerSort('design')"
-                    style="cursor: pointer"
-                  >
-                    Customer
-                  </th>
-
+                  <th>Customer</th>
                   <th>Project</th>
 
                   <th>Kategori</th>
@@ -1370,8 +1378,9 @@
         </div>
       </section>
 
-      <!-- ==================================================== -->
-      <!-- ---------------- RIWAYAT PRODUKSI ------------------ -->
+<!-- =================================================== -->
+<!-- SECTION: RIWAYAT PRODUKSI                           -->
+<!-- =================================================== -->
 
       <section
         class="ws-section collapsible-section"
@@ -1389,7 +1398,23 @@
 
             Riwayat Produksi
           </div>
-          <div class="ws-section-actions section-body">
+          <div class="ws-section-actions section-body" onclick="event.stopPropagation()">
+            <select
+              class="input hide-mobile"
+              id="production-history-filter-customer"
+              style="width: 170px"
+              onchange="renderProductionHistory()"
+            >
+              <option value="">Pilih Customer</option>
+            </select>
+            <select
+              class="input hide-mobile"
+              id="production-history-filter-material"
+              style="width: 170px"
+              onchange="renderProductionHistory()"
+            >
+              <option value="">Pilih Material</option>
+            </select>
             <div class="search-wrap" style="width: 220px">
               <i class="search-icon ri-search-line"></i>
 
@@ -1397,7 +1422,7 @@
                 class="input"
                 id="production-history-search"
                 placeholder="Cari riwayat produksi..."
-                oninput="renderProductionHistory()"
+                oninput="debouncedRenderProductionHistory()"
               />
             </div>
           </div>
@@ -1409,14 +1434,7 @@
               <thead>
                 <tr>
                   <th>No</th>
-
-                  <th
-                    onclick="toggleCustomerSort('production')"
-                    style="cursor: pointer"
-                  >
-                    Customer
-                  </th>
-
+                  <th>Customer</th>
                   <th>Project</th>
 
                   <th>Material</th>
@@ -1441,55 +1459,72 @@
       </section>
     </main>
 
-    <!-- ==================================================== -->
-    <!-- ---------------------- MODALS ---------------------- -->
+<!-- =================================================== -->
+<!-- GROUP: MODAL                                        -->
+<!-- =================================================== -->
 
-    <!-- Modal Design -->
+<!-- MODAL: PESANAN DESAIN -->
     <div class="modal-overlay" id="modal-design">
       <div class="ws-modal">
         <div class="modal-header">
           <h3 class="modal-title">
             <i class="ri-palette-line"></i> Pesanan Desain
           </h3>
-          <button
-            class="btn btn-ghost btn-icon"
-            onclick="closeModal('modal-design')"
-          >
-            <i class="ri-close-line"></i>
-          </button>
+          <div class="modal-header-actions">
+            <button
+              type="button"
+              class="btn btn-icon btn-magic"
+              id="btn-magic-design"
+              title="Input Magic dari Notepad"
+              onclick="openMagicDesignModal()"
+            >
+              <i class="ri-magic-line"></i>
+            </button>
+            <button
+              class="btn btn-ghost btn-icon"
+              onclick="closeModal('modal-design')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Customer</label>
-          <input
-            type="text"
-            class="input"
-            id="do-customer"
-            placeholder="Masukkan customer"
-            oninput="this.value = this.value.toUpperCase()"
-          />
+          <div class="design-customer-row">
+            <select class="input" id="do-customer" onchange="updateDesignPrice()">
+              <option value="">Pilih customer</option>
+            </select>
+            <button
+              class="btn btn-ghost btn-sm"
+              type="button"
+              title="Tambah customer baru beserta rate-nya"
+              onclick="openDesignCustomerModal()"
+            >
+              <i class="ri-user-add-line"></i> Baru
+            </button>
+          </div>
+          <div class="form-hint" id="do-rate-hint">Pilih customer untuk melihat rate khusus.</div>
         </div>
 
         <div class="form-group">
-          <label class="form-label">Project</label>
+          <label class="form-label">Nama Project / File *</label>
           <input
             type="text"
             class="input"
             id="do-design"
             placeholder="Masukkan nama project"
-            oninput="this.value = this.value.toUpperCase()"
+            oninput="handleUppercaseInput(this)"
           />
         </div>
 
         <div class="form-grid-2">
           <div class="form-group">
-            <label class="form-label">Kategori</label>
-            <select class="input" id="do-jenis">
+            <label class="form-label">Kategori Pekerjaan *</label>
+            <select class="input" id="do-jenis" onchange="onDesignKategoriChange()">
               <option value="">Pilih kategori</option>
-              <option value="DESAIN">DESAIN</option>
-              <option value="DTF">DTF</option>
-              <option value="JERSEY">JERSEY</option>
-              <option value="KAOS">KAOS</option>
+              <option value="DTF">LAYOUT DTF</option>
               <option value="PLASTISOL">PLASTISOL</option>
+              <option value="DESAIN">DESAIN</option>
             </select>
           </div>
 
@@ -1499,13 +1534,45 @@
           </div>
         </div>
 
+        <div class="form-group" id="dg-cm-field" style="display: none">
+          <label class="form-label">Panjang (CM) *</label>
+          <input
+            type="number"
+            class="input"
+            id="do-cm"
+            min="0"
+            step="1"
+            placeholder="Contoh: 130"
+            oninput="updateDesignPrice()"
+          />
+          <div class="form-hint">Dihitung otomatis ke meter (130 cm = 1.3m).</div>
+        </div>
+
+        <div class="form-group" id="dg-price-field" style="display: none">
+          <label class="form-label">Harga Manual (Rp) *</label>
+          <input
+            type="number"
+            class="input"
+            id="do-price"
+            min="0"
+            step="1000"
+            placeholder="Sesuaikan kesepakatan"
+            oninput="updateDesignPrice()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Harga Terhitung</label>
+          <input class="input" id="do-price-display" readonly value="-" />
+        </div>
+
         <div class="form-group">
           <label class="form-label">Catatan</label>
           <textarea
             class="input"
             id="do-notes"
             placeholder="Tambahkan catatan..."
-            oninput="this.value = this.value.toUpperCase()"
+            oninput="handleUppercaseInput(this)"
           ></textarea>
         </div>
         <div
@@ -1526,7 +1593,138 @@
       </div>
     </div>
 
-    <!-- Modal Production -->
+<!-- MODAL: MAGIC BULK INPUT (DESAIN) -->
+    <div class="modal-overlay" id="modal-magic-design">
+      <div class="ws-modal magic-design-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-magic-line"></i> Input Magic Desain
+          </h3>
+          <div class="modal-header-actions">
+            <button
+              class="btn btn-ghost btn-icon"
+              onclick="closeModal('modal-magic-design')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Customer</label>
+          <div class="magic-customer-box" id="md-customer">—</div>
+        </div>
+
+        <p class="magic-hint">
+          Tempel daftar desain per blok. Baris <b>DTF</b> / <b>LAYOUT DTF</b>
+          diikuti item ber kategori <b>LAYOUT DTF</b> (boleh ditulis
+          <code>A - 130</code> atau <code>A 1.3m</code>), <b>PLASTISOL</b> memakai
+          rate plastisol per desain, <b>DESAIN</b> memakai harga manual.
+        </p>
+
+        <textarea
+          class="input magic-textarea"
+          id="md-input"
+          rows="10"
+          spellcheck="false"
+          placeholder="DTF&#10;A - 130&#10;B 1.3m&#10;C&#10;&#10;PLASTISOL&#10;A&#10;B&#10;C&#10;&#10;DESAIN&#10;A&#10;B&#10;C"
+          oninput="updateMagicDesignPreview()"
+        ></textarea>
+
+        <div class="magic-preview-table" id="md-preview"></div>
+
+        <div class="design-modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-magic-design')">
+            Batal
+          </button>
+          <button
+            class="btn btn-solid"
+            id="md-save"
+            onclick="saveMagicDesignBulk()"
+          >
+            <i class="ri-magic-line"></i> <span id="md-save-label">Proses &amp; Simpan All</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+<!-- MODAL: TAMBAH CUSTOMER LOYAL -->
+    <div class="modal-overlay" id="modal-design-customer">
+      <div class="ws-modal">
+        <div class="modal-header">
+          <h3 class="modal-title"><i class="ri-user-add-line"></i> Customer Baru</h3>
+          <div class="modal-header-actions">
+            <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-design-customer')">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Nama Customer *</label>
+          <input class="input" id="dc-name" placeholder="Contoh: MAJULAIN"
+                 oninput="handleUppercaseInput(this)" />
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Rate Layout DTF (Rp/meter)</label>
+            <input type="number" class="input" id="dc-rate-dtf" min="0" step="500" value="10000" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rate Plastisol (Rp/desain)</label>
+            <input type="number" class="input" id="dc-rate-plastisol" min="0" step="500" value="25000" />
+          </div>
+        </div>
+        <div class="form-hint">Rate ini otomatis dipakai saat memilih customer pada form pesanan desain.</div>
+        <div class="design-modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-design-customer')">Batal</button>
+          <button class="btn btn-solid" onclick="saveDesignCustomer()">
+            <i class="ri-save-line"></i> Simpan Customer
+          </button>
+        </div>
+      </div>
+    </div>
+
+<!-- MODAL: REKAP TAGIHAN -->
+    <div class="modal-overlay" id="modal-wa-recap">
+      <div class="ws-modal wa-recap-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-file-copy-2-line"></i> Rekap Tagihan
+          </h3>
+          <div class="modal-header-actions">
+            <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-wa-recap')">
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Customer</label>
+          <select class="input" id="wr-customer" onchange="updateWaRecap()">
+            <option value="">Semua Customer</option>
+          </select>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label class="form-label">Dari Tanggal</label>
+            <input type="date" class="input" id="wr-from" onchange="updateWaRecap()" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sampai Tanggal</label>
+            <input type="date" class="input" id="wr-to" onchange="updateWaRecap()" />
+          </div>
+        </div>
+        <div class="form-hint" id="wr-info"></div>
+        <textarea class="input wa-recap-text" id="wr-preview" rows="16" readonly></textarea>
+        <div class="design-modal-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-wa-recap')">Batal</button>
+          <button class="btn btn-solid" onclick="copyWaRecap()">
+            <i class="ri-file-copy-line"></i> Salin Rekap
+          </button>
+        </div>
+      </div>
+    </div>
+
+<!-- MODAL: PESANAN PRODUKSI -->
     <div class="modal-overlay" id="modal-production">
       <div class="ws-modal production-modal">
         <div class="modal-header">
@@ -1534,11 +1732,38 @@
             <i class="ri-printer-line"></i>
             <span id="po-modal-title">Tambah Produksi</span>
           </h3>
+          <div class="modal-header-actions">
+            <button
+              class="btn btn-magic btn-icon"
+              onclick="openMagicParser('production')"
+              title="Magic Paste / Parse"
+            >
+              <i class="ri-magic-line"></i>
+            </button>
+            <button
+              class="btn btn-ghost btn-icon"
+              onclick="closeModal('modal-production')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="legacy-banner" id="po-legacy-banner" style="display: none">
+          <i class="ri-alert-fill legacy-banner-icon"></i>
+          <div class="legacy-banner-text">
+            <strong>Data lama — perlu disesuaikan</strong>
+            <span
+              >Pesanan ini dibuat sebelum fitur template produk & harga per
+              ukuran. Pilih template dan lengkapi detail untuk memakai harga
+              terbaru.</span
+            >
+          </div>
           <button
-            class="btn btn-ghost btn-icon"
-            onclick="closeModal('modal-production')"
+            class="btn btn-yellow btn-sm"
+            onclick="upgradeLegacyOrder()"
           >
-            <i class="ri-close-line"></i>
+            <i class="ri-magic-line"></i> Pilih Template &amp; Lengkapi Detail
           </button>
         </div>
 
@@ -1549,7 +1774,7 @@
               class="input"
               id="po-customer"
               placeholder="Masukkan customer"
-              oninput="this.value = this.value.toUpperCase()"
+              oninput="handleUppercaseInput(this)"
             />
           </div>
 
@@ -1559,7 +1784,7 @@
               class="input"
               id="po-team"
               placeholder="Masukkan nama project"
-              oninput="this.value = this.value.toUpperCase()"
+              oninput="handleUppercaseInput(this)"
             />
           </div>
         </div>
@@ -1601,7 +1826,7 @@
             class="input"
             id="po-notes"
             placeholder="Tambahkan catatan..."
-            oninput="this.value = this.value.toUpperCase()"
+            oninput="handleUppercaseInput(this)"
           ></textarea>
         </div>
 
@@ -1668,7 +1893,7 @@
       </div>
     </div>
 
-    <!-- Modal Note -->
+<!-- MODAL: CATATAN -->
     <div class="modal-overlay" id="modal-production-note">
       <div class="ws-modal">
         <div class="modal-header">
@@ -1687,7 +1912,7 @@
             class="input"
             id="production-note-text"
             placeholder="Catat pembaruan produksi..."
-            oninput="this.value = this.value.toUpperCase()"
+            oninput="handleUppercaseInput(this)"
           ></textarea>
         </div>
         <div
@@ -1711,7 +1936,7 @@
       </div>
     </div>
 
-    <!-- Modal Task -->
+<!-- MODAL: TUGAS -->
     <div class="modal-overlay" id="modal-task">
       <div class="ws-modal">
         <div class="modal-header">
@@ -1763,22 +1988,31 @@
       </div>
     </div>
 
-    <!-- Modal Invoice -->
+<!-- MODAL: INVOICE -->
     <div class="modal-overlay" id="modal-invoice">
       <div class="ws-modal invoice-modal">
         <div class="modal-header">
           <h3 class="modal-title">
             <i class="ri-file-add-line"></i> Tambah Invoice
           </h3>
-          <button
-            class="btn btn-ghost btn-icon"
-            onclick="closeModal('modal-invoice')"
-          >
-            <i class="ri-close-line"></i>
-          </button>
+          <div class="modal-header-actions">
+            <button
+              class="btn btn-magic btn-icon"
+              onclick="openMagicParser('invoice')"
+              title="Magic Paste / Parse"
+            >
+              <i class="ri-magic-line"></i>
+            </button>
+            <button
+              class="btn btn-ghost btn-icon"
+              onclick="closeModal('modal-invoice')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
         </div>
 
-        <!-- ROW 1 -->
+<!-- SUB: BARIS 1 (CUSTOMER & TANGGAL) -->
         <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label">Customer *</label>
@@ -1787,7 +2021,7 @@
               id="invoice-customer"
               placeholder="Masukkan customer"
               required
-              oninput="this.value = this.value.toUpperCase()"
+              oninput="handleUppercaseInput(this)"
             />
           </div>
 
@@ -1802,7 +2036,7 @@
           </div>
         </div>
 
-        <!-- ROW 2 -->
+<!-- SUB: BARIS 2 (NOMOR & STATUS) -->
         <div class="form-grid-2">
           <div class="form-group">
             <label class="form-label">Tanggal</label>
@@ -1820,7 +2054,7 @@
 
         <div class="invoice-divider"></div>
 
-        <!-- ITEM -->
+<!-- SUB: DAFTAR ITEM -->
         <div class="invoice-title">
           <i class="ri-file-list-3-line"></i>
           Item
@@ -1853,7 +2087,7 @@
 
         <div class="invoice-divider"></div>
 
-        <!-- TOTAL -->
+<!-- SUB: TOTAL -->
         <div class="invoice-summary">
           <div class="form-group">
             <label class="form-label">Subtotal</label>
@@ -1895,11 +2129,11 @@
             class="input"
             id="invoice-note"
             placeholder="Tambahkan catatan..."
-            oninput="this.value = this.value.toUpperCase()"
+            oninput="handleUppercaseInput(this)"
           ></textarea>
         </div>
 
-        <!-- FOOTER: Action Buttons -->
+<!-- SUB: FOOTER (TOMBOL AKSI) -->
         <div class="invoice-footer">
           <button
             class="btn btn-ghost"
@@ -1922,13 +2156,60 @@
       </div>
     </div>
 
-    <!-- ===================================================== -->
-    <!-- PREVIEW INVOICE -->
-    <!-- ===================================================== -->
+<!-- =================================================== -->
+<!-- MODAL: MAGIC TEXT PARSER                            -->
+<!-- =================================================== -->
+
+    <div class="modal-overlay" id="modal-magic">
+      <div class="ws-modal magic-modal">
+        <div class="modal-header">
+          <h3 class="modal-title">
+            <i class="ri-magic-line"></i> Magic Paste
+          </h3>
+          <div class="modal-header-actions">
+            <button
+              class="btn btn-ghost btn-icon"
+              onclick="closeModal('modal-magic')"
+            >
+              <i class="ri-close-line"></i>
+            </button>
+          </div>
+        </div>
+
+        <p class="magic-hint">
+          Tempel format pesanan (boleh acak &amp; tidak lengkap). Sistem akan
+          mendeteksi produk, bahan, kerah, lengan, dan distribusi ukuran.
+        </p>
+
+        <textarea
+          class="input magic-textarea"
+          id="magic-input"
+          rows="11"
+          spellcheck="false"
+          placeholder="ATASAN JERSEY&#10;MILANO&#10;POLO V-NECK TUTUP&#10;PANJANG&#10;&#10;S = 1&#10;M = 2&#10;L = 2&#10;XL = 5&#10;2XL = 1&#10;&#10;TOTAL&#10;11 PCS"
+          oninput="previewMagicText()"
+        ></textarea>
+
+        <div class="magic-preview" id="magic-preview"></div>
+
+        <div class="magic-footer">
+          <button class="btn btn-ghost" onclick="closeModal('modal-magic')">
+            Batal
+          </button>
+          <button class="btn btn-solid" onclick="applyMagicText()">
+            <i class="ri-magic-line"></i> Terapkan Data Magic
+          </button>
+        </div>
+      </div>
+    </div>
+
+<!-- =================================================== -->
+<!-- MODAL: PREVIEW INVOICE                              -->
+<!-- =================================================== -->
 
     <div class="modal-overlay" id="modal-preview-invoice">
       <div class="invoice-viewer">
-        <!-- HEADER -->
+<!-- SUB: HEADER PREVIEW -->
 
         <div class="invoice-preview-header">
           <div class="invoice-preview-title">
@@ -1968,7 +2249,7 @@
           </div>
         </div>
 
-        <!-- CANVAS -->
+<!-- SUB: CANVAS INVOICE -->
 
         <div class="invoice-canvas">
           <div class="invoice-stage">
@@ -1978,7 +2259,7 @@
       </div>
     </div>
 
-    <!-- TOAST -->
+<!-- LAYER: TOAST NOTIFIKASI -->
     <div class="toast" id="toast">
       <i class="toast-icon ri-check-circle-fill"></i>
       <span id="toast-msg">Tersimpan</span>
@@ -1987,10 +2268,110 @@
     <script type="module" src="js/app.js"></script>
     <footer class="app-footer">
       <picture class="footer-brand">
-        <source media="(max-width:767px)" srcset="/progress-footer.svg" />
-        <source media="(min-width:768px)" srcset="/progress-footer.svg" />
-        <img src="/progress-footer.svg" alt="Progress Printshop" />
+        <source media="(max-width:767px)" srcset="./assets/images/progress-footer.svg" />
+        <source media="(min-width:768px)" srcset="./assets/images/progress-footer.svg" />
+        <img src="./assets/images/progress-footer.svg" alt="Progress Printshop" />
       </picture>
     </footer>
-  </body>
+<!-- =================================================== -->
+<!-- LAYER: PIN LOCK SCREEN                              -->
+<!-- =================================================== -->
+<div class="pin-lock" id="pin-lock">
+  <div class="pin-lock-card" id="pin-lock-card">
+    <div class="pin-lock-brand">
+      <img
+        src="./assets/images/logo-progress.png"
+        alt="Progress Printshop"
+        class="pin-lock-logo"
+        onerror="this.style.display = 'none'"
+      />
+      <div class="pin-lock-title">Progress Printshop</div>
+      <div class="pin-lock-sub">Workspace Terkunci</div>
+    </div>
+
+    <div class="pin-dots" id="pin-dots" aria-label="6 kotak PIN"></div>
+    <div class="pin-msg" id="pin-msg">Masukkan PIN 6 digit untuk melanjutkan</div>
+
+    <div class="pin-pad" id="pin-pad">
+      <button type="button" class="pin-key" data-pin="1">1</button>
+      <button type="button" class="pin-key" data-pin="2">2</button>
+      <button type="button" class="pin-key" data-pin="3">3</button>
+      <button type="button" class="pin-key" data-pin="4">4</button>
+      <button type="button" class="pin-key" data-pin="5">5</button>
+      <button type="button" class="pin-key" data-pin="6">6</button>
+      <button type="button" class="pin-key" data-pin="7">7</button>
+      <button type="button" class="pin-key" data-pin="8">8</button>
+      <button type="button" class="pin-key" data-pin="9">9</button>
+      <button type="button" class="pin-key pin-key-alt" id="pin-clear" title="Hapus semua">C</button>
+      <button type="button" class="pin-key" data-pin="0">0</button>
+      <button type="button" class="pin-key pin-key-alt" id="pin-back" title="Hapus 1 digit">
+        <i class="ri-arrow-left-line"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: PENGATURAN PIN -->
+<div class="modal-overlay" id="modal-pin">
+  <div class="ws-modal" style="max-width: 420px">
+    <div class="modal-header">
+      <h3 class="modal-title"><i class="ri-lock-2-line"></i> Pengaturan PIN</h3>
+      <div class="modal-header-actions">
+        <button class="btn btn-ghost btn-icon" onclick="closeModal('modal-pin')">
+          <i class="ri-close-line"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">PIN Saat Ini *</label>
+      <input
+        type="password"
+        class="input"
+        id="pin-current"
+        inputmode="numeric"
+        autocomplete="off"
+        maxlength="6"
+        placeholder="••••••"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">PIN Baru *</label>
+      <input
+        type="password"
+        class="input"
+        id="pin-new"
+        inputmode="numeric"
+        autocomplete="new-password"
+        maxlength="6"
+        placeholder="6 digit angka"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Ulangi PIN Baru *</label>
+      <input
+        type="password"
+        class="input"
+        id="pin-confirm"
+        inputmode="numeric"
+        autocomplete="new-password"
+        maxlength="6"
+        placeholder="Ulangi 6 digit"
+      />
+    </div>
+
+    <div class="design-modal-footer">
+      <button class="btn btn-ghost" id="pin-lock-now" onclick="lockNow()">
+        <i class="ri-lock-2-line"></i> Kunci Sekarang
+      </button>
+      <button class="btn btn-solid" onclick="savePinSettings()">
+        <i class="ri-save-line"></i> Simpan PIN
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
 </html>

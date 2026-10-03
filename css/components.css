@@ -1,4 +1,8 @@
-@import "variables.css";
+/* =====================================================================
+   COMPONENTS
+   Komponen UI: pipeline, modal, form, kartu estimator, filter,
+   invoice, magic parser, PIN lock, dan tampilan mobile.
+   ===================================================================== */
 
 /* ============================================================= */
 /* PIPELINE / WORKFLOW                                           */
@@ -8,6 +12,7 @@
   align-items: center;
   gap: 0;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   padding: var(--fs-xl) var(--fs-2xl);
   margin-bottom: var(--fs-xl);
   background: var(--bg-surface);
@@ -167,6 +172,54 @@
   background: var(--bg-input);
   color: var(--text-secondary);
 }
+.badge-legacy {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  gap: 4px;
+  margin-left: 6px;
+  height: 22px;
+  font-size: 10px;
+}
+.badge-legacy i {
+  font-size: 11px;
+}
+
+/* ============================================================= */
+/* LEGACY DATA NOTICE                                             */
+/* ============================================================= */
+.legacy-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-normal);
+  padding: var(--space-normal);
+  margin-bottom: var(--space-normal);
+  border-radius: var(--radius-md);
+  background: var(--color-warning-bg);
+  border: 1px solid var(--color-warning);
+  flex-wrap: wrap;
+}
+.legacy-banner-icon {
+  font-size: var(--fs-lg);
+  color: var(--color-warning);
+  flex-shrink: 0;
+}
+.legacy-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 200px;
+}
+.legacy-banner-text strong {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--color-warning);
+}
+.legacy-banner-text span {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
 
 /* ============================================================= */
 /* PRODUCTION CARDS                                              */
@@ -300,6 +353,44 @@
   gap: var(--space-compact);
   margin-top: var(--space-normal);
 }
+
+/* ---------- Kerapian Card Material (#grid-bahan) ----------
+   Tanpa JS/HTML tambahan: 4 card dipaksa sama tinggi & sejajar. */
+#grid-bahan {
+  /* min 240px -> 4 card lebih sering muat satu baris (dengan 4 kolom grid-auto
+     min 280px, di laptop sempit card ke-4 turun ke baris sendiri) */
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  align-items: stretch; /* semua card satu baris sama tinggi */
+}
+/* Body jadi flex column supaya kotak Subtotal bisa didorong ke bawah */
+#grid-bahan .mat-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+/* 1. Header diratakan min-height -> baris input pertama sejajar horizontal */
+#grid-bahan .mat-card-head {
+  min-height: 76px;
+  align-items: center; /* tombol reset tetap center & sejajar */
+}
+/* Nama & deskripsi menyisakan ruang 2 baris supaya tinggi header stabil */
+#grid-bahan .mat-card-name {
+  min-height: 20px;
+}
+#grid-bahan .mat-card-desc {
+  min-height: 34px; /* 2 baris */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* 2. Jarak antar input (card Custom punya 3 input) */
+#grid-bahan .input-wrap + .input-wrap {
+  margin-top: var(--space-compact);
+}
+/* 3. Jarak input -> kotak hasil memakai default .mat-card-results
+   (var(--space-normal)), sama seperti card Jahit/Pengiriman/Pesanan Tambahan. */
 .result-row {
   display: flex;
   justify-content: space-between;
@@ -535,12 +626,17 @@
   justify-content: center;
   padding: var(--fs-xl);
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--t-fast);
+  /* visibility disembunyikan setelah fade selesai (fade tetap kelihatan) */
+  transition: opacity 0.08s ease-out, visibility 0s linear 0.08s;
+  will-change: opacity;
 }
 .modal-overlay.open {
   opacity: 1;
+  visibility: visible;
   pointer-events: all;
+  transition: opacity 0.08s ease-out, visibility 0s;
 }
 .ws-modal {
   background: var(--bg-surface);
@@ -550,12 +646,68 @@
   max-width: 560px;
   max-height: 90vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   box-shadow: var(--shadow-lg);
-  transform: scale(0.95) translateY(10px);
-  transition: transform var(--t-mid);
+  /* Hanya scale tipis — tanpa translateY, tanpa gerak berat */
+  transform: scale(0.98);
+  opacity: 0;
+  transition: transform 0.08s ease-out, opacity 0.08s ease-out;
+  will-change: auto;
+  display: flex;
+  flex-direction: column;
 }
 .modal-overlay.open .ws-modal {
-  transform: scale(1) translateY(0);
+  transform: scale(1);
+  opacity: 1;
+}
+.ws-modal > * {
+  flex-shrink: 0;
+}
+.ws-modal > *:last-child {
+  margin-top: auto;
+}
+.ws-modal.lenis-modal-active {
+  overflow-y: hidden;
+  overscroll-behavior: contain;
+}
+
+/* ---------- Scrollbar Modal disembunyikan (tetap bisa di-scroll) ----------
+   Scroll container modal yang sebenarnya adalah .ws-modal
+   (class .ws-modal-body/.modal-body/.modal-card dipakai sebagai selector
+   cadangan agar tetap aman bila dipakai nanti). */
+.ws-modal,
+.ws-modal-body,
+.modal-body,
+.modal-card {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE & Edge legacy */
+}
+/* Chrome, Safari, Opera */
+.ws-modal::-webkit-scrollbar,
+.ws-modal-body::-webkit-scrollbar,
+.modal-body::-webkit-scrollbar,
+.modal-card::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+/* Area scroll lain di dalam modal (textarea rekap & tabel preview magic) */
+.wa-recap-text,
+.magic-preview-table {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.wa-recap-text::-webkit-scrollbar,
+.magic-preview-table::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+.modal-body,
+.modal-card {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .modal-header {
   display: flex;
@@ -567,6 +719,91 @@
   font-size: var(--fs-lg);
   font-weight: 600;
   letter-spacing: -0.02em;
+}
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* ============================================================= */
+/* MAGIC TEXT PARSER                                              */
+/* ============================================================= */
+.btn-magic {
+  background: linear-gradient(135deg, #7c3aed, #c026d3);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+}
+.btn-magic:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+.magic-modal {
+  max-width: 620px;
+}
+.magic-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+.magic-textarea {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 180px;
+}
+.magic-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+.magic-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--r-full);
+  background: var(--bg-input);
+  font-size: var(--fs-xs);
+}
+.magic-chip span {
+  color: var(--text-secondary);
+}
+.magic-chip b {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.magic-chip-warn {
+  background: var(--color-warning-bg);
+}
+.magic-chip-warn b {
+  color: var(--color-warning);
+}
+.magic-sizes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+}
+.magic-size-tag {
+  padding: 4px 9px;
+  border-radius: var(--r-sm);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+}
+.magic-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 /* ============================================================= */
@@ -603,28 +840,27 @@
 /* ============================================================= */
 .task-item {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-normal);
-  padding: var(--space-normal) 0;
+  align-items: center;
+  gap: var(--space-compact);
+  padding: var(--space-compact) 0;
   border-bottom: var(--border-industrial);
 }
 .task-item:last-child {
   border-bottom: none;
 }
 .task-check {
-  width: var(--fs-lg);
-  height: var(--fs-lg);
+  width: 20px;
+  height: 20px;
   border: 2px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border-radius: 6px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--fs-xs);
+  font-size: 11px;
   color: transparent;
   transition: var(--t-fast);
   flex-shrink: 0;
-  margin-top: 2px;
 }
 .task-check.done {
   background: var(--color-success);
@@ -634,8 +870,7 @@
 .task-text {
   font-size: var(--fs-sm);
   color: var(--text-primary);
-  flex: 1;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 .task-text.done-text {
   color: var(--text-muted);
@@ -643,7 +878,345 @@
 }
 
 /* ============================================================= */
-/* CHARTS & REPORTS                                              */
+/* SMART DAILY TASKS                                             */
+/* ============================================================= */
+.task-item-auto {
+  border-left: 2px solid var(--color-info);
+  padding-left: var(--space-compact);
+}
+.task-body {
+  flex: 1;
+  min-width: 0;
+}
+.task-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+/* Mengikuti pola .table-tag project */
+.task-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-compact);
+  border-radius: var(--r-full);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.task-tag i {
+  font-size: 10px;
+}
+.task-tag-auto {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+.task-tag-manual {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+}
+
+/* ============================================================= */
+/* PESANAN DESAIN — customer loyal, rate, rekap WA                */
+/* ============================================================= */
+.design-customer-row {
+  display: flex;
+  gap: var(--space-compact);
+  align-items: stretch;
+}
+.design-customer-row .input {
+  flex: 1;
+  min-width: 0;
+}
+.design-customer-row .btn {
+  flex-shrink: 0;
+  height: auto;
+}
+.form-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+#do-price-display {
+  font-weight: 700;
+  color: var(--color-success);
+}
+.design-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: var(--space-normal);
+}
+.wa-recap-modal {
+  max-width: 660px;
+}
+.wa-recap-text {
+  width: 100%;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  resize: vertical;
+  white-space: pre;
+}
+
+/* ---------- MAGIC BULK INPUT DESAIN ---------- */
+.magic-design-modal {
+  max-width: 860px;
+}
+.magic-design-modal code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  background: var(--bg-input);
+  padding: 1px 5px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+.magic-customer-box {
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  border: var(--border-industrial);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.magic-customer-empty {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+.md-warn {
+  color: var(--color-warning);
+  font-weight: 600;
+}
+.magic-preview-table {
+  margin-top: var(--space-compact);
+  max-height: 260px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  border: var(--border-industrial);
+  border-radius: var(--radius-md);
+}
+.magic-empty {
+  padding: var(--space-normal);
+  text-align: center;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+.magic-empty-warn {
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+}
+.md-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-xs);
+}
+.md-table th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-surface);
+  padding: 8px 10px;
+  text-align: left;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  border-bottom: var(--border-industrial);
+}
+.md-table td {
+  padding: 7px 10px;
+  border-bottom: var(--border-industrial);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.md-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.md-table tfoot td {
+  font-weight: 700;
+  color: var(--color-success);
+  border-top: var(--border-industrial);
+  background: var(--bg-input);
+}
+.md-num {
+  color: var(--text-muted);
+  width: 34px;
+}
+.md-name {
+  font-weight: 600;
+}
+.md-len,
+.md-rate {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.md-price {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+.md-table th:last-child,
+.md-table td.md-price {
+  text-align: right;
+}
+.task-badge-rekap {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+/* ============================================================= */
+/* PIN LOCK SCREEN                                              */
+/* ============================================================= */
+/* Ditampilkan sebagai kondisi awal (tanpa display:none) agar   */
+/* konten di bawahnya tidak pernah terlihat sesaat sebelum JS.  */
+
+.pin-lock {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--fs-xl);
+  /* Full-bleed: menutup 100% layar, tanpa border & tanpa celah */
+  background-color: var(--bg-main);
+  background-image: url("../assets/images/lockscreen-bg.webp");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.pin-lock-hidden {
+  display: none !important;
+}
+/* Mobile: tanpa background image (hemat kuota, tampilan polos) */
+@media (max-width: 768px) {
+  .pin-lock {
+    background-image: none;
+  }
+}
+.pin-lock-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 340px;
+  padding: 28px 24px;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  border: var(--border-industrial);
+  box-shadow: var(--shadow-lg);
+  text-align: center;
+}
+.pin-lock-brand {
+  margin-bottom: 20px;
+}
+.pin-lock-logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+.pin-lock-title {
+  font-size: var(--fs-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.pin-lock-sub {
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 18px 0 10px;
+}
+.pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--r-full);
+  border: 2px solid var(--border-strong);
+  background: transparent;
+  transition: transform 0.15s var(--ease-out), background-color 0.15s var(--ease-out),
+    border-color 0.15s var(--ease-out);
+}
+.pin-dot.filled {
+  background: var(--text-primary);
+  border-color: var(--text-primary);
+  transform: scale(1.12);
+}
+
+.pin-msg {
+  min-height: 18px;
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.pin-msg.error {
+  color: var(--color-danger);
+}
+
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.pin-key {
+  height: 56px;
+  border-radius: var(--radius-md);
+  border: var(--border-industrial);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.12s var(--ease-out), background-color 0.15s var(--ease-out);
+  user-select: none;
+}
+.pin-key:hover {
+  background: var(--bg-input-hover);
+}
+.pin-key:active {
+  transform: scale(0.94);
+}
+.pin-key-alt {
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+/* Shake saat PIN salah */
+@keyframes pinShake {
+  0%, 100% { transform: translateX(0); }
+  15% { transform: translateX(-9px); }
+  30% { transform: translateX(9px); }
+  45% { transform: translateX(-7px); }
+  60% { transform: translateX(7px); }
+  75% { transform: translateX(-4px); }
+  90% { transform: translateX(4px); }
+}
+.pin-shake {
+  animation: pinShake 0.45s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+  border-color: var(--color-danger) !important;
+}
+
+/* Cegah scroll halaman di belakang lock screen */
+body.pin-locked {
+  overflow: hidden;
+}
+
+/* ============================================================= */
+/* CHART CONTAINER (dipakai oleh .wa-recap-text & friends)       */
 /* ============================================================= */
 .report-card {
   background: var(--bg-surface);
@@ -656,6 +1229,11 @@
   font-size: var(--fs-base);
   font-weight: 600;
   margin-bottom: var(--fs-base);
+}
+.report-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-normal);
 }
 .chart-container {
   height: 220px;
@@ -687,6 +1265,10 @@
   vertical-align: middle;
   text-align: center;
   border-bottom: var(--border-industrial);
+  transition: background-color 0.15s ease;
+}
+.ws-table tbody tr {
+  transition: background-color 0.15s ease;
 }
 .ws-table tr:hover td {
   background: var(--bg-input);
@@ -865,6 +1447,7 @@
 .invoice-canvas {
   flex: 1;
   overflow: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--bg-deep);
   display: flex;
   justify-content: center;
@@ -877,6 +1460,7 @@
   justify-content: center;
   align-items: center;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .invoice-paper {
   width: 794px;
@@ -931,7 +1515,7 @@
   min-height: 200px;
   background:
     linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.9) 100%),
-    url(https://i.ibb.co.com/n8NwPKd/nav-bg.jpg);
+    url(../assets/images/nav-bg.jpg);
   background-repeat: no-repeat;
   background-size: 400% 400%, cover;
   background-position: 0% 50%, center;

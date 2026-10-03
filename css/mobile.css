@@ -1,4 +1,8 @@
-@import "variables.css";
+/* =====================================================================
+   RESPONSIVE OVERRIDES
+   Seluruh isi file ini berada di dalam @media (max-width: 768px).
+   Mengganti tampilan tabel desktop menjadi kartu di layar sempit.
+   ===================================================================== */
 
 .design-mobile-list,
 #production-mobile-list,

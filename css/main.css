@@ -1,4 +1,9 @@
-@import "variables.css";
+/* =====================================================================
+   MAIN STYLESHEET
+   Reset dasar, layout halaman, navbar, hero, tombol, form, tabel,
+   pagination, footer, dan keyframe animasi.
+   Token warna dan spacing berasal dari variables.css.
+   ===================================================================== */
 
 /* ============================================================= */
 /* RESET & BASE                                                  */
@@ -8,11 +13,8 @@
   padding: 0;
   box-sizing: border-box;
 }
-html {
-  scroll-behavior: smooth;
-}
 .ws-section {
-  scroll-margin-top: 70px;
+  scroll-margin-top: 80px;
 }
 body {
   font-family:
@@ -22,7 +24,14 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   transition: background var(--t-mid), color var(--t-mid);
-  overflow-x: hidden;
+}
+/* Cegah halaman meloncat / layout shift saat scrollbar hilang */
+html {
+  scrollbar-gutter: stable;
+}
+/* Mencegah background page ter-scroll saat modal terbuka */
+body.modal-open {
+  overflow: hidden;
 }
 body.dark .nav-brand .nav-logo-img {
   filter: brightness(0) invert(1) contrast(1.1);
@@ -118,6 +127,10 @@ body.dark .footer-brand img {
   background: var(--bg-surface);
   backdrop-filter: none;
 }
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* ============================================================= */
 /* NAVBAR                                                        */
@@ -160,6 +173,37 @@ body.dark .footer-brand img {
 }
 .nav-name span {
   color: var(--color-danger);
+}
+.nav-center-menu {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-normal);
+}
+.nav-link-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-compact);
+  padding: var(--space-compact) var(--space-normal);
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  border-radius: var(--r-full);
+  transition: var(--t-fast);
+  white-space: nowrap;
+}
+.nav-link-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-input);
+}
+.nav-link-btn i {
+  font-size: var(--fs-base);
 }
 .nav-actions {
   display: flex;
@@ -233,8 +277,29 @@ body.dark .footer-brand img {
   white-space: nowrap;
   outline: none;
 }
+.btn:hover {
+  transform: translateY(-1px);
+}
 .btn:active {
   transform: scale(0.96);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================= */
+/* A11Y: Hormati preferensi pengguna yang mengurangi animasi      */
+/* ============================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 .btn-ghost {
   background: var(--bg-input);

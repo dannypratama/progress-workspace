@@ -1,16 +1,18 @@
-/* ============================================================= */
-/* COSTING MODULE — Kalkulator HPP, Invoice Preview, Estimasi    */
-/* ============================================================= */
+/**
+ * Modul Estimasi Biaya (Costing)
+ * Menghitung HPP bahan, jasa jahit, dan item tambahan berdasarkan
+ * vendor aktif, serta merender riwayat estimasi pada empat workflow.
+ */
 
-import { BAHAN, CFG } from "../database.js";
-import { rupiah, angka, setText, formatRibuan, formatRupiah, formatInvoiceDate, getToday, getAvatarPalette, paginate, pagination, renderPagination } from "../utils.js";
-import { saveAuto, getHistory, deleteHistoryById, loadHistoryData } from "../storage.js";
+import { BAHAN, CFG, normalizeMaterialName } from "../database.js";
+import { rupiah, angka, setText, formatRibuan, getAvatarPalette, paginate, pagination, renderPagination, escapeHTML, getNum, getAngka, populateFilterSelect, formatDateID } from "../utils.js";
+import { saveAuto, getHistory, loadHistoryData } from "../storage.js";
 
 /* ===================== MATERIAL CALC ===================== */
 
 export function hitungBahan() {
-  const g = (id) => parseFloat(document.getElementById(id)?.value) || 0;
-  const a = (id) => angka(document.getElementById(id)?.value || "");
+  const g = getNum;
+  const a = getAngka;
   const results = {};
   Object.keys(BAHAN).forEach((k) => {
     const m = g(k);
@@ -33,8 +35,8 @@ export function hitungBahan() {
 /* ===================== HITUNG TOTAL ===================== */
 
 export function hitung() {
-  const g = (id) => parseFloat(document.getElementById(id)?.value) || 0;
-  const a = (id) => angka(document.getElementById(id)?.value || "");
+  const g = getNum;
+  const a = getAngka;
   const pcs = g("pcs") || 1;
   const hargaJual = a("hargaJualPcs");
   const bahan = hitungBahan();
@@ -50,7 +52,7 @@ export function hitung() {
   Object.keys(BAHAN).forEach((k) => {
     setText(k + "Kg", bahan[k + "Kg"].toFixed(3) + " kg");
     setText(k + "Berat", rupiah(bahan[k + "Berat"]));
-    if (k !== "rib") setText(k + "Print", rupiah(bahan[k + "Print"]));
+    setText(k + "Print", rupiah(bahan[k + "Print"]));
     setText(k + "Total", rupiah(bahan[k + "Total"]));
   });
   setText("customKgTotal", bahan.customKg.toFixed(3) + " kg");
@@ -74,7 +76,6 @@ export function hitung() {
     pEl.textContent = rupiah(profit);
     pEl.className = "s-val " + (profit >= 0 ? "profit-pos" : "profit-neg");
   }
-  updateCostChart([bahan.milanoTotal, bahan.embossTotal, bahan.airwalkTotal, bahan.ribTotal, bahan.lottoTotal, jahitTotal, ongkir, tambahan]);
   saveAuto();
 }
 
@@ -102,9 +103,9 @@ export function tambahItem(data = {}) {
   wrap.className = "extra-item";
   wrap.innerHTML = `
     <div class="extra-grid">
-      <input class="input extra-name" placeholder="Nama barang" value="${data.nama || ""}" oninput="titleCase(this); hitung()" />
-      <input class="input extra-qty" type="number" placeholder="pcs" value="${data.qty || ""}" oninput="hitung()" />
-      <input class="input extra-price" placeholder="Harga" value="${data.harga || ""}" oninput="formatRibuan(this); hitung()" />
+      <input class="input extra-name" placeholder="Nama barang" value="${escapeHTML(data.nama) || ""}" oninput="titleCase(this); hitung()" />
+      <input class="input extra-qty" type="number" placeholder="pcs" value="${escapeHTML(data.qty) || ""}" oninput="hitung()" />
+      <input class="input extra-price" placeholder="Harga" value="${escapeHTML(data.harga) || ""}" oninput="formatRibuan(this); hitung()" />
       <div class="extra-total">Rp0</div>
       <button class="btn btn-danger" onclick="tambahItem()"><i class="ri-shopping-cart-2-line"></i></button>
       <button class="btn btn-danger" onclick="hapusItem(this)"><i class="ri-delete-bin-line"></i></button>
@@ -159,7 +160,7 @@ export function resetCard(ids) {
 
 export function resetFormCosting() {
   if (!confirm("Reset semua form estimasi biaya?")) return;
-  ["customer", "team", "pcs", "hargaJualPcs", "milano", "emboss", "airwalk", "rib", "lotto", "jahitPcs", "jahitHarga", "ongkirNama", "ongkirHarga", "ongkirKet"].forEach((id) => {
+  ["customer", "team", "pcs", "hargaJualPcs", "milano", "emboss", "rib", "customMeter", "customKg", "customHarga", "jahitPcs", "jahitHarga", "ongkirNama", "ongkirHarga", "ongkirKet"].forEach((id) => {
     const el = document.getElementById(id);
     if (el) el.value = "";
   });
@@ -169,8 +170,8 @@ export function resetFormCosting() {
 /* ===================== ESTIMASI CEPAT ===================== */
 
 export function hitungEstimasi() {
-  const g = (id) => parseFloat(document.getElementById(id)?.value) || 0;
-  const a = (id) => angka(document.getElementById(id)?.value || "");
+  const g = getNum;
+  const a = getAngka;
   const pcs = g("estimasiPcs");
   const bahan = document.getElementById("estimasiBahan")?.value;
   const hargaJ = a("estimasiHarga");
@@ -197,97 +198,18 @@ export function hitungEstimasi() {
   }
 }
 
-/* ===================== CHARTS ===================== */
-
-let isDark = false;
-
-export function setChartTheme(dark) {
-  isDark = dark;
-}
-
-function getChartTheme() {
-  return {
-    grid: isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)",
-    text: isDark ? "#64748b" : "#94a3b8",
-  };
-}
-
-export let costChart = null;
-
-export function updateCostChart(data) {
-  const ctx = document.getElementById("chart-cost");
-  if (!ctx) return;
-  if (costChart) costChart.destroy();
-  const t = getChartTheme();
-  costChart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: ["Milano", "Emboss", "Airwalk", "Ribpoly", "Lotto", "Jahit", "Ongkir"],
-      datasets: [{ data, backgroundColor: data.map((v) => v > 0 ? "rgba(16, 185, 129, 0.8)" : "rgba(0,0,0,0.05)"), borderRadius: 6 }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { color: t.grid }, ticks: { color: t.text, font: { size: 10 } } },
-        y: { grid: { color: t.grid }, ticks: { color: t.text, font: { size: 10 }, callback: (v) => "Rp" + (v / 1000).toFixed(0) + "k" } },
-      },
-    },
-  });
-}
-
-export let pipeChart = null;
-
-export function updatePipelineChart(designOrders) {
-  const ctx = document.getElementById("chart-pipeline");
-  if (!ctx) return;
-  if (pipeChart) pipeChart.destroy();
-  const orders = designOrders || [];
-  const counts = ["design", "revisi", "done"].map((s) => orders.filter((o) => o.stage === s).length);
-  pipeChart = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["Desain", "Revisi", "Selesai"],
-      datasets: [{ data: counts, backgroundColor: ["#3b82f6", "#f59e0b", "#10b981"], borderWidth: 0 }],
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: "bottom", labels: { font: { size: 11 }, color: getChartTheme().text, usePointStyle: true, padding: 12 } },
-      },
-      cutout: "70%",
-    },
-  });
-}
-
-export function updateCharts(designOrders) {
-  updatePipelineChart(designOrders);
-}
-
-/* ===================== HISTORY ===================== */
-
-export const customerSortModes = {
-  designOrder: "default",
-  costing: "default",
-  design: "default",
-  production: "default",
-};
-
-export function toggleCustomerSort(type) {
-  customerSortModes[type] = customerSortModes[type] === "default" ? "az" : "default";
-  if (type === "designOrder") { if (typeof window.renderDesignOrders === "function") window.renderDesignOrders(); }
-  if (type === "costing") renderCostingHistory();
-  if (type === "design") renderDesignHistory();
-  if (type === "production") renderProductionHistory();
-}
-
 export function renderCostingHistory() {
   const tbody = document.getElementById("costing-history-tbody");
   const mobileList = document.getElementById("costing-history-mobile-list");
   if (!tbody) return;
   let histories = getHistory();
-  if (customerSortModes.costing === "default") histories.sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0));
-  if (customerSortModes.costing === "az") histories.sort((a, b) => (a.customer || "").localeCompare(b.customer || "", "id", { sensitivity: "base" }));
+  populateFilterSelect("costing-filter-customer", histories.map((o) => o.customer), "Pilih Customer");
+  populateFilterSelect("costing-filter-project", histories.map((o) => o.team), "Pilih Project");
+  histories.sort((a, b) => new Date(b.created || 0) - new Date(a.created || 0));
+  const filterCustomer = document.getElementById("costing-filter-customer")?.value || "";
+  const filterProject = document.getElementById("costing-filter-project")?.value || "";
+  if (filterCustomer) histories = histories.filter((o) => (o.customer || "") === filterCustomer);
+  if (filterProject) histories = histories.filter((o) => (o.team || "") === filterProject);
   const search = (document.getElementById("costing-history-search")?.value || "").toLowerCase();
   if (search) histories = histories.filter((o) => (o.customer || "").toLowerCase().includes(search) || (o.team || "").toLowerCase().includes(search));
   const totalRows = histories.length;
@@ -304,20 +226,20 @@ export function renderCostingHistory() {
     const avatar = getAvatarPalette(o.customer || "");
     return `<tr>
 <td class="table-number">${rowNumber}</td>
-<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${o.customer || "-"}</div></div></div></td>
-<td><div class="table-title">${o.team || "-"}</div></td>
+<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${escapeHTML(o.customer) || "-"}</div></div></div></td>
+<td><div class="table-title">${escapeHTML(o.team) || "-"}</div></td>
 <td><div class="table-title">${o.qty || 0} pcs</div></td>
 <td><div class="table-title">Rp${Number(o.hppPcs || 0).toLocaleString("id-ID")}</div></td>
 <td><div class="table-title">Rp${Number(o.hargaJual || 0).toLocaleString("id-ID")}</div></td>
 <td><div class="table-title" style="color:${profit >= 0 ? "var(--color-success)" : "var(--color-danger)"};">Rp${profit.toLocaleString("id-ID")}</div></td>
-<td><div class="table-subtitle">${o.date || "-"}</div></td>
+<td><div class="table-subtitle">${formatDateID(o.date)}</div></td>
 <td class="table-action"><div class="action-dropdown"><button class="btn btn-ghost btn-sm btn-icon-round dropdown-toggle" onclick="toggleActionDropdown(this, event)"><i class="ri-more-2-fill"></i></button><div class="dropdown-menu"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="window.loadHistoryData(${o.id})"><i class="ri-upload-2-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="window.deleteHistory(${o.id})"><i class="ri-delete-bin-line"></i></button></div></div></td>
 </tr>`;
   }).join("");
   if (mobileList) {
     mobileList.innerHTML = visible.map((o) => {
       const profit = Number(o.totalProfit || 0);
-      return `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${o.customer || "-"}</div><div class="history-mobile-title">${o.team || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="window.loadHistoryData(${o.id})"><i class="ri-upload-2-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="window.deleteHistory(${o.id})"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-stack-line"></i>${o.qty || 0} pcs</div><div class="mobile-meta-item"><i class="ri-money-dollar-circle-line"></i>Rp${Number(o.hppPcs || 0).toLocaleString("id-ID")}</div><div class="mobile-meta-item"><i class="ri-line-chart-line"></i><span class="${profit >= 0 ? "mobile-meta-success" : "mobile-meta-danger"}">Rp${profit.toLocaleString("id-ID")}</span></div><div class="mobile-meta-item">${o.date || "-"}</div></div></div>`;
+      return `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${escapeHTML(o.customer) || "-"}</div><div class="history-mobile-title">${escapeHTML(o.team) || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="window.loadHistoryData(${o.id})"><i class="ri-upload-2-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="window.deleteHistory(${o.id})"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-stack-line"></i>${o.qty || 0} pcs</div><div class="mobile-meta-item"><i class="ri-money-dollar-circle-line"></i>Rp${Number(o.hppPcs || 0).toLocaleString("id-ID")}</div><div class="mobile-meta-item"><i class="ri-line-chart-line"></i><span class="${profit >= 0 ? "mobile-meta-success" : "mobile-meta-danger"}">Rp${profit.toLocaleString("id-ID")}</span></div><div class="mobile-meta-item">${formatDateID(o.date)}</div></div></div>`;
     }).join("");
   }
   renderPagination("costing-history-pagination", p.page, p.totalPages, "changeCostingHistoryPage", totalRows);
@@ -329,8 +251,13 @@ export function renderDesignHistory() {
   if (!tbody) return;
   let orders = [...(window.firebaseDesignOrders || [])];
   orders = orders.filter((o) => o.stage === "done");
+  populateFilterSelect("design-history-filter-customer", orders.map((o) => o.customer), "Pilih Customer");
+  populateFilterSelect("design-history-filter-kategori", orders.map((o) => o.jenis), "Pilih Kategori");
+  const filterCustomer = document.getElementById("design-history-filter-customer")?.value || "";
+  const filterKategori = document.getElementById("design-history-filter-kategori")?.value || "";
+  if (filterCustomer) orders = orders.filter((o) => (o.customer || "") === filterCustomer);
+  if (filterKategori) orders = orders.filter((o) => (o.jenis || "") === filterKategori);
   const search = (document.getElementById("design-history-search")?.value || "").toLowerCase();
-  if (customerSortModes.design === "az") orders.sort((a, b) => (a.customer || "").localeCompare(b.customer || "", "id", { sensitivity: "base" }));
   if (search) orders = orders.filter((o) => (o.customer || "").toLowerCase().includes(search) || (o.design || "").toLowerCase().includes(search) || (o.jenis || "").toLowerCase().includes(search));
   const totalRows = orders.length;
   const p = paginate(orders, pagination.designHistory);
@@ -345,15 +272,15 @@ export function renderDesignHistory() {
     const avatar = getAvatarPalette(o.customer || "");
     return `<tr>
 <td class="table-number">${rowNumber}</td>
-<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${o.customer || "-"}</div></div></div></td>
-<td><div class="table-title">${o.design || "-"}</div></td>
-<td><span class="table-tag">${o.jenis || "-"}</span></td>
-<td><div class="table-subtitle">${o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString("id-ID") : "-"}</div></td>
+<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${escapeHTML(o.customer) || "-"}</div></div></div></td>
+<td><div class="table-title">${escapeHTML(o.design) || "-"}</div></td>
+<td><span class="table-tag">${escapeHTML(o.jenis) || "-"}</span></td>
+<td><div class="table-subtitle">${o.createdAt?.seconds ? formatDateID(new Date(o.createdAt.seconds * 1000)) : "-"}</div></td>
 <td class="table-action"><div class="action-dropdown"><button class="btn btn-ghost btn-sm btn-icon-round dropdown-toggle" onclick="toggleActionDropdown(this, event)"><i class="ri-more-2-fill"></i></button><div class="dropdown-menu"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div></td>
 </tr>`;
   }).join("");
   if (mobileList) {
-    mobileList.innerHTML = visible.map((o) => `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${o.customer || "-"}</div><div class="history-mobile-title">${o.design || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-price-tag-3-line"></i><span>${o.jenis || "-"}</span></div><div class="mobile-meta-item"><span>${o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString("id-ID") : "-"}</span></div></div></div>`).join("");
+    mobileList.innerHTML = visible.map((o) => `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${escapeHTML(o.customer) || "-"}</div><div class="history-mobile-title">${escapeHTML(o.design) || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-price-tag-3-line"></i><span>${escapeHTML(o.jenis) || "-"}</span></div><div class="mobile-meta-item"><span>${o.createdAt?.seconds ? formatDateID(new Date(o.createdAt.seconds * 1000)) : "-"}</span></div></div></div>`).join("");
   }
   renderPagination("design-history-pagination", p.page, p.totalPages, "changeDesignHistoryPage", totalRows);
 }
@@ -364,9 +291,14 @@ export function renderProductionHistory() {
   if (!tbody) return;
   let orders = [...(window.firebaseProductionOrders || [])];
   orders = orders.filter((o) => o.stage === "done");
-  const search = (document.getElementById("design-history-search")?.value || "").toLowerCase();
-  if (customerSortModes.production === "default") orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
-  if (customerSortModes.production === "az") orders.sort((a, b) => (a.customer || "").localeCompare(b.customer || "", "id", { sensitivity: "base" }));
+  populateFilterSelect("production-history-filter-customer", orders.map((o) => o.customer), "Pilih Customer");
+  populateFilterSelect("production-history-filter-material", orders.map((o) => normalizeMaterialName(o.material)), "Pilih Material");
+  const filterCustomer = document.getElementById("production-history-filter-customer")?.value || "";
+  const filterMaterial = document.getElementById("production-history-filter-material")?.value || "";
+  if (filterCustomer) orders = orders.filter((o) => (o.customer || "") === filterCustomer);
+  if (filterMaterial) orders = orders.filter((o) => normalizeMaterialName(o.material) === filterMaterial);
+  orders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  const search = (document.getElementById("production-history-search")?.value || "").toLowerCase();
   if (search) orders = orders.filter((o) => (o.customer || "").toLowerCase().includes(search) || (o.team || "").toLowerCase().includes(search) || (o.material || "").toLowerCase().includes(search));
   const totalRows = orders.length;
   const p = paginate(orders, pagination.productionHistory);
@@ -381,16 +313,16 @@ export function renderProductionHistory() {
     const avatar = getAvatarPalette(o.customer || "");
     return `<tr>
 <td class="table-number">${rowNumber}</td>
-<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${o.customer || "-"}</div></div></div></td>
-<td><div class="table-title">${o.team || "-"}</div></td>
-<td><span class="table-tag">${o.material || "-"}</span></td>
-<td><div class="table-title">${o.qty || "-"}</div></td>
-<td><div class="table-subtitle">${o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString("id-ID") : "-"}</div></td>
+<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${escapeHTML(o.customer) || "-"}</div></div></div></td>
+<td><div class="table-title">${escapeHTML(o.team) || "-"}</div></td>
+<td><span class="table-tag">${escapeHTML(normalizeMaterialName(o.material)) || "-"}</span></td>
+<td><div class="table-title">${escapeHTML(o.qty) || "-"}</div></td>
+<td><div class="table-subtitle">${o.createdAt?.seconds ? formatDateID(new Date(o.createdAt.seconds * 1000)) : "-"}</div></td>
 <td class="table-action"><div class="action-dropdown"><button class="btn btn-ghost btn-sm btn-icon-round dropdown-toggle" onclick="toggleActionDropdown(this, event)"><i class="ri-more-2-fill"></i></button><div class="dropdown-menu"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div></td>
 </tr>`;
   }).join("");
   if (mobileList) {
-    mobileList.innerHTML = visible.map((o) => `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${o.customer || "-"}</div><div class="history-mobile-title">${o.team || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-t-shirt-2-line"></i><span>${o.material || "-"}</span></div><div class="mobile-meta-item"><i class="ri-stack-line"></i><span>${o.qty || "-"} pcs</span></div></div></div>`).join("");
+    mobileList.innerHTML = visible.map((o) => `<div class="history-mobile-item"><div class="history-mobile-head"><div><div class="history-mobile-customer">${escapeHTML(o.customer) || "-"}</div><div class="history-mobile-title">${escapeHTML(o.team) || "-"}</div></div><div class="history-mobile-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-t-shirt-2-line"></i><span>${escapeHTML(normalizeMaterialName(o.material)) || "-"}</span></div><div class="mobile-meta-item"><i class="ri-stack-line"></i><span>${escapeHTML(o.qty) || "-"} pcs</span></div></div></div>`).join("");
   }
   renderPagination("production-history-pagination", p.page, p.totalPages, "changeProductionHistoryPage", totalRows);
 }

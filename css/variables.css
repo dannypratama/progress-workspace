@@ -1,3 +1,10 @@
+/* =====================================================================
+   DESIGN TOKENS
+   Sumber tunggal untuk warna, radius, bayangan, tipografi, dan
+   transisi. Seluruh komponen mengacu ke sini lewat var(--nama).
+   Mode gelap didefinisikan pada blok [data-theme="dark"] di bawah.
+   ===================================================================== */
+
 :root {
   /* LIGHT MODE (default) */
   --bg-main: #f5f5f5;
@@ -87,9 +94,12 @@ body.dark {
   --bg-input: #202122;
   --bg-input-hover: #2d2f31;
 
-  --text-primary: #f5f5f5;
-  --text-secondary: #a0a0a5;
-  --text-muted: #6b6b70;
+  /* Teks dark mode memakai abu-abu lembut, bukan putih murni, agar tidak
+     menyilaukan. Rasio kontras: primary 11.6:1 (AAA), secondary 6.7:1 (AA),
+     muted 3.2-3.6:1 (AA-large). */
+  --text-primary: #cbd5e1;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
 
   --color-success-bg: rgba(16, 185, 129, 0.15);
   --color-warning-bg: rgba(245, 158, 11, 0.15);

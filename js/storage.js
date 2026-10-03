@@ -1,10 +1,12 @@
-/* ============================================================= */
-/* LOCALSTORAGE HANDLER — Autosave, Load, Clear                  */
-/* ============================================================= */
+/**
+ * Penyimpanan Lokal — Autosave, Riwayat, dan Tugas
+ * Seluruh data di sini hanya bertahan di perangkat pengguna
+ * (localStorage), bukan di Firestore.
+ */
 
-import { KEYS, BAHAN, CFG } from "./database.js";
-import { rupiah, angka, setText, getToday } from "./utils.js";
-import { hitung, hitungBahan, hitungTambahan, tambahItem } from "./components/costing.js";
+import { KEYS } from "./database.js";
+import { rupiah, angka, getNum, getAngka, getToday } from "./utils.js";
+import { hitung, tambahItem } from "./components/costing.js";
 
 let autoSaveTimer = null;
 
@@ -58,24 +60,29 @@ export function saveHistory() {
   document.querySelectorAll("#estimator-section input, #estimator-section select").forEach((el) => {
     if (el.id) inputs[el.id] = el.value;
   });
-  const qty = parseFloat(document.getElementById("pcs")?.value) || 0;
-  const hargaJual = angka(document.getElementById("hargaJualPcs")?.value || "0");
+  const qty = getNum("pcs");
+  const hargaJual = getAngka("hargaJualPcs");
   const grandTotal = parseFloat((document.getElementById("grandTotal")?.textContent || "0").replace(/[^\d]/g, "")) || 0;
   const hppPcs = qty ? Math.round(grandTotal / qty) : 0;
   const jualTotal = hargaJual * qty;
   const profit = jualTotal - grandTotal;
-  const histories = JSON.parse(localStorage.getItem(KEYS.history) || "[]");
+  const histories = getHistory();
   histories.unshift({
     id: Date.now(),
     customer: document.getElementById("customer")?.value || "Tanpa Nama",
     team: document.getElementById("team")?.value || "-",
     qty, hppPcs, hargaJual, grandTotal, totalProfit: profit,
     extraItems, inputs,
-    date: new Date().toLocaleDateString("id-ID"),
+    date: getToday(),
     total: rupiah(grandTotal),
     created: new Date().toISOString(),
   });
-  localStorage.setItem(KEYS.history, JSON.stringify(histories));
+  if (histories.length > 100) histories.length = 100;
+  try {
+    localStorage.setItem(KEYS.history, JSON.stringify(histories));
+  } catch (e) {
+    console.warn("[saveHistory] Gagal menyimpan riwayat:", e);
+  }
   document.querySelectorAll("#estimator-section input, #estimator-section select").forEach((el) => {
     if (el.type === "checkbox" || el.type === "radio") el.checked = false;
     else el.value = "";
@@ -88,7 +95,11 @@ export function saveHistory() {
 }
 
 export function getHistory() {
-  return JSON.parse(localStorage.getItem(KEYS.history) || "[]");
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.history) || "[]") || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 export function deleteHistoryById(id) {
@@ -117,11 +128,31 @@ export function loadHistoryData(id) {
 }
 
 export function getTasks() {
-  return JSON.parse(localStorage.getItem(KEYS.tasks) || "[]");
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.tasks) || "[]") || [];
+  } catch (e) {
+    return [];
+  }
 }
 
 export function saveTasks(tasks) {
   localStorage.setItem(KEYS.tasks, JSON.stringify(tasks));
+}
+
+/* Status "selesai" untuk tugas otomatis, dikunci per tanggal.
+   Bentuk: { "2026-08-11": ["auto:deadline:production:abc", ...] } */
+export function getSmartDoneMap() {
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.smart_tasks_done) || "{}") || {};
+  } catch (e) {
+    return {};
+  }
+}
+
+export function saveSmartDoneMap(map) {
+  try {
+    localStorage.setItem(KEYS.smart_tasks_done, JSON.stringify(map || {}));
+  } catch (e) { /* abaikan quota/private mode */ }
 }
 
 export function saveSectionState() {
@@ -141,7 +172,7 @@ export function restoreSectionState() {
     "history-section": true,
     "design-history-section": true,
     "production-history-section": true,
-    "report-section": true,
+    "report-section": false,
   };
   const saved = JSON.parse(localStorage.getItem("sectionStates") || "{}");
   document.querySelectorAll(".collapsible-section").forEach((section) => {

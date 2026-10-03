@@ -1,10 +1,21 @@
-/* ============================================================= */
-/* TRACKER MODULE — Kanban Board (Design & Production Pipeline)  */
-/* ============================================================= */
+/**
+ * Modul Tracker — Papan Kanban
+ * Merender board Pesanan Desain dan Pesanan Produksi, menerapkan
+ * filter stage, serta menghitung ringkasan pipeline.
+ */
 
-import { DESIGN_STAGES, PRODUCTION_STAGES } from "../database.js";
-import { setText, getToday, getAvatarPalette, paginate, pagination, renderPagination } from "../utils.js";
-import { updateCharts, customerSortModes } from "./costing.js";
+import { DESIGN_STAGES, PRODUCTION_STAGES, DESIGN_STATUS_VALUES, normalizeMaterialName } from "../database.js";
+import { setText, getToday, getAvatarPalette, paginate, pagination, renderPagination, escapeHTML, populateFilterSelect, isLegacyOrder, formatDateID, toIsoDate } from "../utils.js";
+
+function deadlineFlags(deadline, stage) {
+  const iso = toIsoDate(deadline);
+  const diff = iso ? (new Date(iso) - new Date(getToday())) / 86400000 : 999;
+  return {
+    deadline: iso ? formatDateID(iso) : "",
+    overdue: iso && diff < 0 && stage !== "done",
+    urgent: iso && diff >= 0 && diff <= 2 && stage !== "done",
+  };
+}
 
 /* ===================== HERO ===================== */
 
@@ -39,19 +50,24 @@ export function renderDesignOrders() {
   const tbody = document.getElementById("design-tbody");
   const mobileList = document.getElementById("design-mobile-list");
   if (!tbody) return;
+  populateFilterSelect("design-filter-customer", orders.map((o) => o.customer), "Pilih Customer");
+  populateFilterSelect("design-filter-kategori", orders.map((o) => o.jenis), "Pilih Kategori");
   orders = [...orders].sort((a, b) => {
     if (a.stage === "done" && b.stage !== "done") return 1;
     if (a.stage !== "done" && b.stage === "done") return -1;
     return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
   });
   const search = (document.getElementById("design-search")?.value || "").toLowerCase();
-  const today = getToday();
-  if (customerSortModes.designOrder === "az") orders.sort((a, b) => (a.customer || "").localeCompare(b.customer || "", "id", { sensitivity: "base" }));
+  const filterCustomer = document.getElementById("design-filter-customer")?.value || "";
+  const filterKategori = document.getElementById("design-filter-kategori")?.value || "";
+  if (filterCustomer) orders = orders.filter((o) => (o.customer || "") === filterCustomer);
+  if (filterKategori) orders = orders.filter((o) => (o.jenis || "") === filterKategori);
   if (search) orders = orders.filter((o) => (o.customer || "").toLowerCase().includes(search) || (o.design || "").toLowerCase().includes(search) || (o.jenis || "").toLowerCase().includes(search));
-  if (designState.filter === "done") orders = orders.filter((o) => o.stage === "done");
-  if (designState.filter === "progress") orders = orders.filter((o) => o.stage !== "done");
-  if (designState.filter === "overdue") orders = orders.filter((o) => o.deadline && o.deadline < today && o.stage !== "done");
-  if (designState.filter === "urgent") orders = orders.filter((o) => { if (!o.deadline || o.stage === "done") return false; const diff = (new Date(o.deadline) - new Date(today)) / 86400000; return diff >= 0 && diff <= 2; });
+  // Validasi nilai: kalau ada nilai lama yang tersimpan (mis. "progress"),
+  // jangan sampai menghasilkan tabel kosong — fallback ke semua data.
+  if (designState.filter && DESIGN_STATUS_VALUES.includes(designState.filter)) {
+    orders = orders.filter((o) => o.stage === designState.filter);
+  }
   if (designState.stageFilter) orders = orders.filter((o) => o.stage === designState.stageFilter);
   const totalRows = orders.length;
   const p = paginate(orders, pagination.designOrders);
@@ -66,16 +82,13 @@ export function renderDesignOrders() {
   const statusLabel = { design: "Desain", revisi: "Revisi", done: "Selesai" };
   tbody.innerHTML = visible.map((o, index) => {
     const rowNumber = totalRows - ((p.page - 1) * 5 + index);
-    const deadline = o.deadline || "";
-    const diffDays = deadline ? (new Date(deadline) - new Date(today)) / 86400000 : 999;
-    const overdue = deadline && diffDays < 0 && o.stage !== "done";
-    const urgent = deadline && diffDays >= 0 && diffDays <= 2 && o.stage !== "done";
+    const { deadline, overdue, urgent } = deadlineFlags(o.deadline, o.stage);
     const avatar = getAvatarPalette(o.customer || "");
     return `<tr>
 <td class="table-number">${rowNumber}</td>
-<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${o.customer}</div><div class="table-subtitle">${o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString("id-ID") : "-"}</div></div></div></td>
-<td><div class="table-title">${o.design}</div></td>
-<td><span class="table-tag">${o.jenis || "-"}</span></td>
+<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${escapeHTML(o.customer)}</div><div class="table-subtitle">${o.createdAt?.seconds ? formatDateID(new Date(o.createdAt.seconds * 1000)) : "-"}</div></div></div></td>
+<td><div class="table-title">${escapeHTML(o.design)}${o.rekapStatus === "BELUM DIREKAP" ? ` <span class="task-badge task-badge-rekap"><i class="ri-file-list-3-line"></i> BELUM DIREKAP</span>` : ""}</div></td>
+<td><span class="table-tag">${escapeHTML(o.jenis) || "-"}</span></td>
 <td><div class="table-deadline" style="color:${overdue ? "var(--color-danger)" : urgent ? "var(--color-warning)" : ""};"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-time-fill" : "ri-calendar-line"}"></i>${overdue ? "Terlambat" : deadline || "-"}</div></td>
 <td><span class="badge-status ${statusBadge[o.stage]}">${statusLabel[o.stage]}</span></td>
 <td class="table-action"><div class="action-dropdown"><button class="btn btn-ghost btn-sm btn-icon-round dropdown-toggle" onclick="toggleActionDropdown(this, event)"><i class="ri-more-2-fill"></i></button><div class="dropdown-menu"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevDesignStage('${o.id}')"><i class="ri-arrow-left-line"></i></button>${o.stage !== "done" ? `<button class="btn btn-solid btn-sm btn-icon-round" onclick="advanceDesignStage('${o.id}')"><i class="ri-arrow-right-line"></i></button>` : ""}<button class="btn btn-green btn-sm btn-icon-round" onclick="markDesignDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div></td>
@@ -83,20 +96,18 @@ export function renderDesignOrders() {
   }).join("");
   if (mobileList) {
     mobileList.innerHTML = visible.map((o) => {
-      const deadline = o.deadline || "";
-      const diffDays = deadline ? (new Date(deadline) - new Date(today)) / 86400000 : 999;
-      const overdue = deadline && diffDays < 0 && o.stage !== "done";
-      const urgent = deadline && diffDays >= 0 && diffDays <= 2 && o.stage !== "done";
-      return `<div class="design-mobile-card"><div class="design-mobile-head"><div><div class="design-mobile-customer">${o.customer}</div><div class="design-mobile-title">${o.design}</div></div><span class="badge-status ${statusBadge[o.stage]}">${statusLabel[o.stage]}</span></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-price-tag-3-line"></i><span>${o.jenis || "-"}</span></div><div class="mobile-meta-item ${overdue ? "mobile-meta-danger" : urgent ? "mobile-meta-warning" : ""}"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-error-warning-line" : "ri-calendar-line"}"></i><span>${overdue ? "Terlambat" : deadline || "-"}</span></div></div><div class="design-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevDesignStage('${o.id}')"><i class="ri-arrow-left-line"></i></button>${o.stage !== "done" ? `<button class="btn btn-solid btn-sm btn-icon-round" onclick="advanceDesignStage('${o.id}')"><i class="ri-arrow-right-line"></i></button>` : ""}<button class="btn btn-green btn-sm btn-icon-round" onclick="markDesignDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div>`;
+      const { deadline, overdue, urgent } = deadlineFlags(o.deadline, o.stage);
+      return `<div class="design-mobile-card"><div class="design-mobile-head"><div><div class="design-mobile-customer">${escapeHTML(o.customer)}</div><div class="design-mobile-title">${escapeHTML(o.design)}</div></div><span class="badge-status ${statusBadge[o.stage]}">${statusLabel[o.stage]}</span></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-price-tag-3-line"></i><span>${escapeHTML(o.jenis) || "-"}</span></div><div class="mobile-meta-item ${overdue ? "mobile-meta-danger" : urgent ? "mobile-meta-warning" : ""}"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-error-warning-line" : "ri-calendar-line"}"></i><span>${overdue ? "Terlambat" : deadline || "-"}</span></div></div><div class="design-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevDesignStage('${o.id}')"><i class="ri-arrow-left-line"></i></button>${o.stage !== "done" ? `<button class="btn btn-solid btn-sm btn-icon-round" onclick="advanceDesignStage('${o.id}')"><i class="ri-arrow-right-line"></i></button>` : ""}<button class="btn btn-green btn-sm btn-icon-round" onclick="markDesignDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditDesign('${o.id}')"><i class="ri-edit-line"></i></button><button class="btn btn-red btn-sm btn-icon-round" onclick="deleteDesignOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div>`;
     }).join("");
   }
   renderPagination("design-pagination", p.page, p.totalPages, "changeDesignPage", totalRows);
 }
 
-export function setDesignFilter(filter) { designState.filter = filter; renderDesignOrders(); }
+export function setDesignFilter(filter) { designState.filter = filter; pagination.designOrders = 1; renderDesignOrders(); }
 
 export function filterByStage(stage) {
   designState.stageFilter = designState.stageFilter === stage ? null : stage;
+  pagination.designOrders = 1;
   renderDesignOrders();
   const steps = document.querySelectorAll("#pipeline-section .pipeline-step");
   const selectedIdx = DESIGN_STAGES.indexOf(designState.stageFilter);
@@ -115,19 +126,24 @@ export function renderProductionOrders() {
   const tbody = document.getElementById("production-tbody");
   const mobileList = document.getElementById("production-mobile-list");
   if (!tbody) return;
-  const today = getToday();
+  populateFilterSelect("production-filter-customer", orders.map((o) => o.customer), "Pilih Customer");
+  populateFilterSelect("production-filter-material", orders.map((o) => normalizeMaterialName(o.material)), "Pilih Material");
   orders = [...orders].sort((a, b) => {
     if (a.stage === "done" && b.stage !== "done") return 1;
     if (a.stage !== "done" && b.stage === "done") return -1;
     return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
   });
   const search = (document.getElementById("production-search")?.value || "").toLowerCase();
+  const filterCustomer = document.getElementById("production-filter-customer")?.value || "";
+  const filterMaterial = document.getElementById("production-filter-material")?.value || "";
+  if (filterCustomer) orders = orders.filter((o) => (o.customer || "") === filterCustomer);
+  if (filterMaterial) orders = orders.filter((o) => normalizeMaterialName(o.material) === filterMaterial);
   if (search) orders = orders.filter((o) => (o.customer || "").toLowerCase().includes(search) || (o.team || "").toLowerCase().includes(search) || (o.material || "").toLowerCase().includes(search));
-  const filter = document.getElementById("production-filter")?.value || "all";
-  if (filter === "progress") orders = orders.filter((o) => o.stage !== "done");
+  const filter = document.getElementById("production-filter")?.value || "";
+  if (filter === "design") orders = orders.filter((o) => o.stage === "design");
+  if (filter === "production") orders = orders.filter((o) => o.stage === "printing" || o.stage === "jahit" || o.stage === "qc");
+  if (filter === "invoice") orders = orders.filter((o) => !!o.invoiceId);
   if (filter === "done") orders = orders.filter((o) => o.stage === "done");
-  if (filter === "overdue") orders = orders.filter((o) => o.deadline && o.deadline < today && o.stage !== "done");
-  if (filter === "urgent") orders = orders.filter((o) => { if (!o.deadline || o.stage === "done") return false; const diff = (new Date(o.deadline) - new Date(today)) / 86400000; return diff >= 0 && diff <= 2; });
   if (prodState.stageFilter) orders = orders.filter((o) => o.stage === prodState.stageFilter);
   const totalRows = orders.length;
   const p = paginate(orders, pagination.productionOrders);
@@ -141,29 +157,23 @@ export function renderProductionOrders() {
   const statusLabel = { design: "Desain", printing: "Printing", jahit: "Jahit", qc: "QC", done: "Selesai" };
   tbody.innerHTML = visible.map((o, index) => {
     const rowNumber = totalRows - ((p.page - 1) * 5 + index);
-    const deadline = o.deadline || "";
-    const diff = deadline ? (new Date(deadline) - new Date(today)) / 86400000 : 999;
-    const overdue = deadline && diff < 0 && o.stage !== "done";
-    const urgent = deadline && diff >= 0 && diff <= 2 && o.stage !== "done";
+    const { deadline, overdue, urgent } = deadlineFlags(o.deadline, o.stage);
     const avatar = getAvatarPalette(o.customer || "");
     return `<tr>
 <td class="table-number">${rowNumber}</td>
-<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${o.customer}</div><div class="table-subtitle">${o.createdAt?.seconds ? new Date(o.createdAt.seconds * 1000).toLocaleDateString("id-ID") : "-"}</div></div></div></td>
-<td><div class="table-title">${o.team || "-"}</div></td>
-<td><div class="table-title">${o.qty || "-"}</div></td>
-<td><span class="table-tag">${o.material || "-"}</span></td>
+<td><div class="table-customer"><div class="table-avatar" style="background:${avatar.bg};color:${avatar.text};"><i class="ri-user-3-fill"></i></div><div class="table-info"><div class="table-title">${escapeHTML(o.customer)}</div><div class="table-subtitle">${o.createdAt?.seconds ? formatDateID(new Date(o.createdAt.seconds * 1000)) : "-"}</div></div></div></td>
+<td><div class="table-title">${escapeHTML(o.team) || "-"}</div></td>
+<td><div class="table-title">${escapeHTML(o.qty) || "-"}</div></td>
+<td><span class="table-tag">${escapeHTML(normalizeMaterialName(o.material)) || "-"}</span></td>
 <td><div class="table-deadline" style="color:${overdue ? "var(--color-danger)" : urgent ? "var(--color-warning)" : ""};"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-error-warning-line" : "ri-calendar-line"}"></i>${overdue ? "Terlambat" : deadline || "-"}</div></td>
-<td><span class="badge-status ${statusClass[o.stage]}">${statusLabel[o.stage]}</span></td>
+<td><span class="badge-status ${statusClass[o.stage]}">${statusLabel[o.stage]}</span>${isLegacyOrder(o) ? `<span class="badge-status badge-legacy" title="Data lama — perlu lengkapi template & ukuran"><i class="ri-alert-fill"></i>Perlu Disesuaikan</span>` : ""}</td>
 <td class="table-action"><div class="action-dropdown"><button class="btn btn-ghost btn-sm btn-icon-round dropdown-toggle" onclick="toggleActionDropdown(this, event)"><i class="ri-more-2-fill"></i></button><div class="dropdown-menu"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevProductionStage('${o.id}')"><i class="ri-arrow-left-line"></i></button><button class="btn btn-solid btn-sm btn-icon-round" onclick="nextProductionStage('${o.id}')"><i class="ri-arrow-right-line"></i></button><button class="btn btn-green btn-sm btn-icon-round" onclick="markProductionDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button>${o.invoiceId ? `<button class="btn btn-ghost btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Lihat Invoice"><i class="ri-file-text-line"></i></button>` : `<button class="btn btn-solid btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Buat Invoice"><i class="ri-file-add-line"></i></button>`}<button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div></td>
 </tr>`;
   }).join("");
   if (mobileList) {
     mobileList.innerHTML = visible.map((o) => {
-      const deadline = o.deadline || "";
-      const diff = deadline ? (new Date(deadline) - new Date(today)) / 86400000 : 999;
-      const overdue = deadline && diff < 0 && o.stage !== "done";
-      const urgent = deadline && diff >= 0 && diff <= 2 && o.stage !== "done";
-      return `<div class="design-mobile-card"><div class="design-mobile-head"><div><div class="design-mobile-customer">${o.customer}</div><div class="design-mobile-title">${o.team || "-"}</div></div><span class="badge-status ${statusClass[o.stage]}">${statusLabel[o.stage]}</span></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-t-shirt-2-line"></i><span>${o.material || "-"}</span></div><div class="mobile-meta-item"><i class="ri-stack-line"></i><span>${o.qty || "-"} pcs</span></div><div class="mobile-meta-item ${overdue ? "mobile-meta-danger" : urgent ? "mobile-meta-warning" : ""}"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-error-warning-line" : "ri-calendar-line"}"></i><span>${overdue ? "Terlambat" : deadline || "-"}</span></div></div><div class="design-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevProductionStage('${o.id}')"><i class="ri-arrow-left-line"></i></button>${o.stage !== "done" ? `<button class="btn btn-solid btn-sm btn-icon-round" onclick="nextProductionStage('${o.id}')"><i class="ri-arrow-right-line"></i></button>` : ""}<button class="btn btn-green btn-sm btn-icon-round" onclick="markProductionDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button>${o.invoiceId ? `<button class="btn btn-ghost btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Lihat Invoice"><i class="ri-file-text-line"></i></button>` : `<button class="btn btn-solid btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Buat Invoice"><i class="ri-file-add-line"></i></button>`}<button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div>`;
+      const { deadline, overdue, urgent } = deadlineFlags(o.deadline, o.stage);
+      return `<div class="design-mobile-card"><div class="design-mobile-head"><div><div class="design-mobile-customer">${escapeHTML(o.customer)}</div><div class="design-mobile-title">${escapeHTML(o.team) || "-"}</div></div><span class="badge-status ${statusClass[o.stage]}">${statusLabel[o.stage]}</span></div><div class="mobile-meta"><div class="mobile-meta-item"><i class="ri-t-shirt-2-line"></i><span>${escapeHTML(normalizeMaterialName(o.material)) || "-"}</span></div><div class="mobile-meta-item"><i class="ri-stack-line"></i><span>${escapeHTML(o.qty) || "-"} pcs</span></div>${isLegacyOrder(o) ? `<div class="mobile-meta-item mobile-meta-warning"><i class="ri-alert-fill"></i><span>Perlu Disesuaikan</span></div>` : ""}<div class="mobile-meta-item ${overdue ? "mobile-meta-danger" : urgent ? "mobile-meta-warning" : ""}"><i class="${overdue ? "ri-alarm-warning-fill" : urgent ? "ri-error-warning-line" : "ri-calendar-line"}"></i><span>${overdue ? "Terlambat" : deadline || "-"}</span></div></div><div class="design-actions"><button class="btn btn-ghost btn-sm btn-icon-round" onclick="prevProductionStage('${o.id}')"><i class="ri-arrow-left-line"></i></button>${o.stage !== "done" ? `<button class="btn btn-solid btn-sm btn-icon-round" onclick="nextProductionStage('${o.id}')"><i class="ri-arrow-right-line"></i></button>` : ""}<button class="btn btn-green btn-sm btn-icon-round" onclick="markProductionDone('${o.id}')"><i class="ri-check-line"></i></button><button class="btn btn-ghost btn-sm btn-icon-round" onclick="openEditProduction('${o.id}')"><i class="ri-edit-line"></i></button>${o.invoiceId ? `<button class="btn btn-ghost btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Lihat Invoice"><i class="ri-file-text-line"></i></button>` : `<button class="btn btn-solid btn-sm btn-icon-round" onclick="createInvoiceFromProduction('${o.id}')" title="Buat Invoice"><i class="ri-file-add-line"></i></button>`}<button class="btn btn-red btn-sm btn-icon-round" onclick="deleteProductionOrder('${o.id}')"><i class="ri-delete-bin-line"></i></button></div></div>`;
     }).join("");
   }
   renderPagination("production-pagination", p.page, p.totalPages, "changeProductionPage", totalRows);
@@ -171,6 +181,7 @@ export function renderProductionOrders() {
 
 export function filterProductionStage(stage) {
   prodState.stageFilter = prodState.stageFilter === stage ? null : stage;
+  pagination.productionOrders = 1;
   renderProductionOrders();
   const steps = document.querySelectorAll("[data-production-stage]");
   const selectedIdx = PRODUCTION_STAGES.indexOf(prodState.stageFilter);

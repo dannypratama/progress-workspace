@@ -1,0 +1,29 @@
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary / log
+*.log
+*.tmp
+*.bak
+*.old
+~$*
+
+# Dependency (project tidak memakai build step, ini cadangan)
+node_modules/
+
+# Environment — JANGAN pernah commit kredensial asli
+.env
+.env.local
+*.env
+
+# Firebase service account
+serviceAccount*.json
+*-firebase-adminsdk-*.json
