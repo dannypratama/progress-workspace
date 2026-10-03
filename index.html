@@ -60,9 +60,17 @@
     <link rel="stylesheet" href="css/mobile.css" />
   </head>
   <body class="pin-locked">
-<!-- =================================================== -->
-<!-- SECTION: NAVBAR                                     -->
-<!-- =================================================== -->
+    <!-- =================================================== -->
+    <!-- PEMBERITAHUAN: Netlify Drawer                       -->
+    <!-- Script klasik, bukan module, agar tidak ter-defer.  -->
+    <!-- Dijalankan sebelum elemen lain agar dapat menghapus  -->
+    <!-- Drawer yang disuntik Netlify sebelum halaman digambar. -->
+    <!-- =================================================== -->
+    <script src="js/netlify-block.js"></script>
+
+    <!-- =================================================== -->
+    <!-- SECTION: NAVBAR                                     -->
+    <!-- =================================================== -->
     <nav class="nav">
       <a class="nav-brand" href="#">
         <img
