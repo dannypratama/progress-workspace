@@ -1,14 +1,19 @@
 # =====================================================================
 # NETLIFY CUSTOM HEADERS
 # Berlaku untuk seluruh path yang dilayani Netlify.
-# CATATAN: file ini hanya mengatur response header. Untuk memblokir
-# akses sungguhan, lihat catatan pada bagian /docs di bawah.
+#
+# CATATAN PENTING:
+# File ini HANYA bisa mengatur response header. Baris berbentuk
+# "HTTP/1.1 404 Not Found" TIDAK valid di sini dan akan diabaikan
+# Netlify. Untuk memblokir akses sungguhan (status 404) diperlukan
+# file _redirects terpisah.
 # =====================================================================
 
 # ---------------------------------------------------------------------
 # KEAMANAN - berlaku global
 # ---------------------------------------------------------------------
 /*
+  X-Robots-Tag: noindex, nofollow
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
