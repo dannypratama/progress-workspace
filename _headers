@@ -1,0 +1,46 @@
+# =====================================================================
+# NETLIFY CUSTOM HEADERS
+# Berlaku untuk seluruh path yang dilayani Netlify.
+# CATATAN: file ini hanya mengatur response header. Untuk memblokir
+# akses sungguhan, lihat catatan pada bagian /docs di bawah.
+# =====================================================================
+
+# ---------------------------------------------------------------------
+# KEAMANAN - berlaku global
+# ---------------------------------------------------------------------
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  # Content-Security-Policy sengaja TIDAK dipasang: aplikasi memakai
+  # 92 inline handler (onclick) dan banyak inline style, sehingga CSP
+  # ketat akan membuat situs tidak berfungsi.
+
+# ---------------------------------------------------------------------
+# DOKUMENTASI INTERNAL - jangan di-indeks mesin pencari
+# ---------------------------------------------------------------------
+/docs/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: no-store, max-age=0
+  X-Frame-Options: DENY
+
+/firestore.rules
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet
+  Cache-Control: no-store, max-age=0
+  X-Frame-Options: DENY
+
+# ---------------------------------------------------------------------
+# CACHE - aset statis boleh disimpan lama, HTML selalu dicek ulang
+# ---------------------------------------------------------------------
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/css/*
+  Cache-Control: public, max-age=604800
+
+/js/*
+  Cache-Control: public, max-age=604800
+
+/assets/*
+  Cache-Control: public, max-age=2592000
