@@ -4,6 +4,9 @@
 [build]
   publish = "."
 
+# Mematikan Netlify Drawer/Snippet Injection pada semua lingkungan deploy
 [build.environment]
-  # Matikan Netlify Drawer (badge/banner yang disuntikkan ke halaman).
-  NETLIFY_SKIP_INJECT_DRAWER = "true"
+  NETLIFY_NEXT_DROP_INJECT_DRAWER = "false"
+
+[context.production.environment]
+  NETLIFY_NEXT_DROP_INJECT_DRAWER = "false"
