@@ -1005,7 +1005,7 @@ window.addProductionItem = function () {
       <select class="input spec-material"></select>
       <select class="input spec-color kaos-field" style="display:none"><option value="HITAM">HITAM</option><option value="PUTIH">PUTIH</option><option value="ABU">ABU</option><option value="BIRU BENHUR">BIRU BENHUR</option><option value="MAROON">MAROON</option><option value="MERAH">MERAH</option><option value="NAVY">NAVY</option></select>
       <select class="input spec-sleeve"><option value="PENDEK">PENDEK</option><option value="PANJANG">PANJANG +10K</option><option value="3/4">3/4 +10K</option><option value="7/8">7/8 +10K</option></select>
-      <select class="input spec-collar jersey-field"><option value="O-NECK">O-NECK</option><option value="V-NECK">V-NECK</option><option value="V-VARIASI">V-VARIASI</option><option value="V-POTONG">V-POTONG</option><option value="POLO V-NECK">POLO V-NECK +5K</option><option value="KERAH POLO">KERAH POLO +10K</option><option value="KUPLUK">KUPLUK +10K</option></select>
+      <select class="input spec-collar jersey-field"><option value="O-NECK">O-NECK</option><option value="V-NECK">V-NECK</option><option value="V-VARIASI">V-VARIASI</option><option value="V-POTONG">V-POTONG</option><option value="POLO V-NECK">POLO V-NECK +5K</option><option value="KERAH KANCING">KERAH KANCING +10K</option><option value="KUPLUK">KUPLUK +10K</option></select>
       <select class="input spec-addon"><option value="">TANPA ADDON</option></select>
       <button type="button" class="btn btn-sm" onclick="applyProductSpec(this)"><i class="ri-check-line"></i> PAKAI TEMPLATE</button>
     </div>
@@ -1535,7 +1535,7 @@ function parseJerseySpecs(specStr, specs) {
   const pick = (phrases, words) =>
     phrases.find((p) => specStr.includes(p)) || words.find((w) => tokens.includes(w)) || "";
   specs.material = pick(["EMBOSS TOPO", "EMBOSS STRAW"], ["MILANO", "BINTIK", "PUMA", "AIRWALK", "EMBOSS"]);
-  specs.collar = pick(["POLO V-NECK", "KERAH POLO"], ["O-NECK", "V-NECK", "V-VARIASI", "V-POTONG", "KUPLUK"]);
+  specs.collar = pick(["POLO V-NECK", "KERAH KANCING"], ["O-NECK", "V-NECK", "V-VARIASI", "V-POTONG", "KUPLUK"]);
   specs.sleeve = pick([], ["PENDEK", "PANJANG", "3/4", "7/8"]);
   specs.addon = pick([], ["OVERSIZE"]);
 }
@@ -1635,7 +1635,7 @@ window.addInvoiceItem = function () {
       <select class="input spec-material"></select>
       <select class="input spec-color kaos-field" style="display:none"><option value="HITAM">HITAM</option><option value="PUTIH">PUTIH</option><option value="ABU">ABU</option><option value="BIRU BENHUR">BIRU BENHUR</option><option value="MAROON">MAROON</option><option value="MERAH">MERAH</option><option value="NAVY">NAVY</option></select>
       <select class="input spec-sleeve"><option value="PENDEK">PENDEK</option><option value="PANJANG">PANJANG +10K</option><option value="3/4">3/4 +10K</option><option value="7/8">7/8 +10K</option></select>
-      <select class="input spec-collar jersey-field"><option value="O-NECK">O-NECK</option><option value="V-NECK">V-NECK</option><option value="V-VARIASI">V-VARIASI</option><option value="V-POTONG">V-POTONG</option><option value="POLO V-NECK">POLO V-NECK +5K</option><option value="KERAH POLO">KERAH POLO +10K</option><option value="KUPLUK">KUPLUK +10K</option></select>
+      <select class="input spec-collar jersey-field"><option value="O-NECK">O-NECK</option><option value="V-NECK">V-NECK</option><option value="V-VARIASI">V-VARIASI</option><option value="V-POTONG">V-POTONG</option><option value="POLO V-NECK">POLO V-NECK +5K</option><option value="KERAH KANCING">KERAH KANCING +10K</option><option value="KUPLUK">KUPLUK +10K</option></select>
       <select class="input spec-addon"><option value="">TANPA ADDON</option></select>
       <button type="button" class="btn btn-sm" onclick="applyProductSpec(this)"><i class="ri-check-line"></i> PAKAI TEMPLATE</button>
     </div>

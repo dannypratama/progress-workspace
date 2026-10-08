@@ -572,7 +572,7 @@ export const MASTER_PRICE_DATABASE = {
       kerah_tambahan: {
         "polo v-neck": 5000,
         "polo v tutup": 5000,
-        "kerah polo": 10000,
+        "kerah kancing": 10000,
         "pake kerah": 10000,
         kupluk: 10000,
       },

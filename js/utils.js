@@ -256,7 +256,7 @@ const MAGIC_SLEEVE_RULES = [
   { value: "PENDEK", re: /PENDEK/ },
 ];
 const MAGIC_PRODUCTS = ["JERSEY", "KAOS", "KEMEJA"];
-const MAGIC_COLLARS = ["O-NECK", "V-NECK", "V-VARIASI", "V-POTONG", "POLO V-NECK", "KERAH POLO", "KUPLUK"];
+const MAGIC_COLLARS = ["O-NECK", "V-NECK", "V-VARIASI", "V-POTONG", "POLO V-NECK", "KERAH KANCING", "KUPLUK"];
 
 // buang semua non-alphanumeric -> agar "V-NECK" == "V NECK" == "VNECK"
 const magicTight = (v) => String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
